@@ -1,8 +1,8 @@
-package com.cts.controller;
+package com.cts.mfrp.skillbarter.controller;
 
-import com.cts.model.Session;
-import com.cts.model.Session.SessionStatus;
-import com.cts.service.SessionService;
+import com.cts.mfrp.skillbarter.model.Session;
+import com.cts.mfrp.skillbarter.model.Session.SessionStatus;
+import com.cts.mfrp.skillbarter.service.SessionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;

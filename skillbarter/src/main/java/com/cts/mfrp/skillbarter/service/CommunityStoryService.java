@@ -1,9 +1,9 @@
-package com.cts.service;
+package com.cts.mfrp.skillbarter.service;
 
-import com.cts.model.CommunityStory;
-import com.cts.model.User;
-import com.cts.repo.CommunityStoryRepo;
-import com.cts.repo.UserRepo;
+import com.cts.mfrp.skillbarter.model.CommunityStory;
+import com.cts.mfrp.skillbarter.model.User;
+import com.cts.mfrp.skillbarter.repo.CommunityStoryRepo;
+import com.cts.mfrp.skillbarter.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

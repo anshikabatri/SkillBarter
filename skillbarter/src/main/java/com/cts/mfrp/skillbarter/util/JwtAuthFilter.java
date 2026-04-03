@@ -1,4 +1,4 @@
-package com.cts.util;
+package com.cts.mfrp.skillbarter.util;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

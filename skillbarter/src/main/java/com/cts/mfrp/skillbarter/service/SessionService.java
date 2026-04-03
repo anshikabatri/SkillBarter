@@ -1,12 +1,12 @@
-package com.cts.service;
+package com.cts.mfrp.skillbarter.service;
 
-import com.cts.model.Session;
-import com.cts.model.Session.SessionStatus;
-import com.cts.model.Skill;
-import com.cts.model.User;
-import com.cts.repo.SessionRepo;
-import com.cts.repo.SkillRepo;
-import com.cts.repo.UserRepo;
+import com.cts.mfrp.skillbarter.model.Session;
+import com.cts.mfrp.skillbarter.model.Session.SessionStatus;
+import com.cts.mfrp.skillbarter.model.Skill;
+import com.cts.mfrp.skillbarter.model.User;
+import com.cts.mfrp.skillbarter.repo.SessionRepo;
+import com.cts.mfrp.skillbarter.repo.SkillRepo;
+import com.cts.mfrp.skillbarter.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

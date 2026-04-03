@@ -1,6 +1,6 @@
-package com.cts.repo;
+package com.cts.mfrp.skillbarter.repo;
 
-import com.cts.model.Review;
+import com.cts.mfrp.skillbarter.model.Review;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

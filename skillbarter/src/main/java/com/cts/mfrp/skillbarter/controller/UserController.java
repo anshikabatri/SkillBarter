@@ -1,7 +1,7 @@
-package com.cts.controller;
+package com.cts.mfrp.skillbarter.controller;
 
-import com.cts.model.User;
-import com.cts.service.UserService;
+import com.cts.mfrp.skillbarter.model.User;
+import com.cts.mfrp.skillbarter.service.UserService;
 import jakarta.validation.Valid;
 import lombok.*;
 import org.springframework.http.ResponseEntity;

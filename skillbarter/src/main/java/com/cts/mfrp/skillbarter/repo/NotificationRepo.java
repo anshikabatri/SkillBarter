@@ -1,6 +1,6 @@
-package com.cts.repo;
+package com.cts.mfrp.skillbarter.repo;
 
-import com.cts.model.Notification;
+import com.cts.mfrp.skillbarter.model.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;

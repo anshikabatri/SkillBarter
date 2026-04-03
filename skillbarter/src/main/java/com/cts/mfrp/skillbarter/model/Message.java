@@ -1,4 +1,4 @@
-package com.cts.model;
+package com.cts.mfrp.skillbarter.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

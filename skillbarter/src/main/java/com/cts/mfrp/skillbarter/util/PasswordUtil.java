@@ -1,4 +1,4 @@
-package com.cts.util;
+package com.cts.mfrp.skillbarter.util;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;

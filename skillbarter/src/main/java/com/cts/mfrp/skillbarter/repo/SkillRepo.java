@@ -1,7 +1,5 @@
-package com.cts.repo;
-import com.cts.model.Skill;
-import com.cts.model.UserSkill;
-import com.cts.model.Category;
+package com.cts.mfrp.skillbarter.repo;
+import com.cts.mfrp.skillbarter.model.Skill;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;

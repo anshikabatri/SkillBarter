@@ -1,4 +1,4 @@
-package com.cts.model;
+package com.cts.mfrp.skillbarter.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;

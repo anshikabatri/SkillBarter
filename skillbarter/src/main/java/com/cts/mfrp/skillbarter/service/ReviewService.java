@@ -1,9 +1,9 @@
-package com.cts.service;
+package com.cts.mfrp.skillbarter.service;
 
-import com.cts.model.Review;
-import com.cts.model.User;
-import com.cts.repo.ReviewRepo;
-import com.cts.repo.UserRepo;
+import com.cts.mfrp.skillbarter.model.Review;
+import com.cts.mfrp.skillbarter.model.User;
+import com.cts.mfrp.skillbarter.repo.ReviewRepo;
+import com.cts.mfrp.skillbarter.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;

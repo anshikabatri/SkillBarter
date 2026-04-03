@@ -1,7 +1,7 @@
-package com.cts.controller;
+package com.cts.mfrp.skillbarter.controller;
 
-import com.cts.model.Calender;
-import com.cts.service.CalenderService;
+import com.cts.mfrp.skillbarter.model.Calender;
+import com.cts.mfrp.skillbarter.service.CalenderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;

@@ -1,4 +1,4 @@
-package com.cts.util;
+package com.cts.mfrp.skillbarter.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

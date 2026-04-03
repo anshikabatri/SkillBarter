@@ -1,8 +1,8 @@
-package com.cts.controller;
+package com.cts.mfrp.skillbarter.controller;
 
-import com.cts.model.Message;
-import com.cts.service.MessageService;
-import com.cts.util.ApiResponse;
+import com.cts.mfrp.skillbarter.model.Message;
+import com.cts.mfrp.skillbarter.service.MessageService;
+import com.cts.mfrp.skillbarter.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

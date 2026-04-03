@@ -1,9 +1,9 @@
-package com.cts.service;
+package com.cts.mfrp.skillbarter.service;
 
-import com.cts.model.Match;
-import com.cts.model.User;
-import com.cts.repo.MatchRepo;
-import com.cts.repo.UserRepo;
+import com.cts.mfrp.skillbarter.model.Match;
+import com.cts.mfrp.skillbarter.model.User;
+import com.cts.mfrp.skillbarter.repo.MatchRepo;
+import com.cts.mfrp.skillbarter.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

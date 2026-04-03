@@ -1,7 +1,7 @@
-package com.cts.controller;
+package com.cts.mfrp.skillbarter.controller;
 
-import com.cts.model.CommunityStory;
-import com.cts.service.CommunityStoryService;
+import com.cts.mfrp.skillbarter.model.CommunityStory;
+import com.cts.mfrp.skillbarter.service.CommunityStoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

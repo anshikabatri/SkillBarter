@@ -1,8 +1,8 @@
-package com.cts.repo;
+package com.cts.mfrp.skillbarter.repo;
 
-import com.cts.model.Transaction;
-import com.cts.model.Transaction.TransactionStatus;
-import com.cts.model.Transaction.PaymentMethod;
+import com.cts.mfrp.skillbarter.model.Transaction;
+import com.cts.mfrp.skillbarter.model.Transaction.TransactionStatus;
+import com.cts.mfrp.skillbarter.model.Transaction.PaymentMethod;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

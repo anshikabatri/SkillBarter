@@ -1,4 +1,4 @@
-package com.cts.util;
+package com.cts.mfrp.skillbarter.util;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

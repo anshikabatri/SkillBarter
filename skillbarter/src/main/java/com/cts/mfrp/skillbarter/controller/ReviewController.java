@@ -1,8 +1,8 @@
-package com.cts.controller;
+package com.cts.mfrp.skillbarter.controller;
 
-import com.cts.model.Review;
-import com.cts.service.ReviewService;
-import com.cts.util.ApiResponse;
+import com.cts.mfrp.skillbarter.model.Review;
+import com.cts.mfrp.skillbarter.service.ReviewService;
+import com.cts.mfrp.skillbarter.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

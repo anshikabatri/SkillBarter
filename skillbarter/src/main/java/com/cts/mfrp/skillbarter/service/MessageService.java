@@ -1,11 +1,10 @@
-package com.cts.service;
+package com.cts.mfrp.skillbarter.service;
 
-import com.cts.model.Message;
-import com.cts.model.Session;
-import com.cts.model.User;
-import com.cts.repo.MessageRepo;
-import com.cts.repo.SessionRepo;
-import com.cts.repo.UserRepo;
+import com.cts.mfrp.skillbarter.model.Message;
+import com.cts.mfrp.skillbarter.model.Session;
+import com.cts.mfrp.skillbarter.repo.MessageRepo;
+import com.cts.mfrp.skillbarter.repo.SessionRepo;
+import com.cts.mfrp.skillbarter.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;

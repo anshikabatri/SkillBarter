@@ -1,7 +1,7 @@
-package com.cts.controller;
+package com.cts.mfrp.skillbarter.controller;
 
-import com.cts.model.User;
-import com.cts.service.AuthService;
+import com.cts.mfrp.skillbarter.model.User;
+import com.cts.mfrp.skillbarter.service.AuthService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

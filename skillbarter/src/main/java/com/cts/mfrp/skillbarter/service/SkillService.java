@@ -1,4 +1,6 @@
-package com.cts.service;
+package com.cts.mfrp.skillbarter.service;
+import com.cts.mfrp.skillbarter.model.Skill;
+import com.cts.mfrp.skillbarter.repo.SkillRepo;
 import com.cts.model.*;
 import com.cts.repo.*;
 import org.springframework.beans.factory.annotation.Autowired;

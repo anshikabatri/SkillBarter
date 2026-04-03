@@ -1,7 +1,7 @@
-package com.cts.controller;
+package com.cts.mfrp.skillbarter.controller;
 
-import com.cts.model.Match;
-import com.cts.service.MatchService;
+import com.cts.mfrp.skillbarter.model.Match;
+import com.cts.mfrp.skillbarter.service.MatchService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
