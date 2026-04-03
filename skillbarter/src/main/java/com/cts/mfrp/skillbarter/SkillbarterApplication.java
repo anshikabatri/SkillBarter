@@ -9,13 +9,13 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 @SpringBootApplication
 @ComponentScan(basePackages = {
         "com.cts.mfrp.skillbarter",
-        "com.cts.controller",
-        "com.cts.service",
-        "com.cts.repo",
-        "com.cts.util"          // ← THIS was missing — BeansConfig & SecurityConfig live here
+        "com.cts.mfrp.skillbarter.controller",
+        "com.cts.mfrp.skillbarter.service",
+        "com.cts.mfrp.skillbarter.repo",
+        "com.cts.mfrp.skillbarter.util"          // ← THIS was missing — BeansConfig & SecurityConfig live here
 })
-@EnableJpaRepositories(basePackages = "com.cts.repo")
-@EntityScan(basePackages = "com.cts.model")
+@EnableJpaRepositories(basePackages = "com.cts.mfrp.skillbarter.repo")
+@EntityScan(basePackages = "com.cts.mfrp.skillbarter.model")
 public class SkillbarterApplication {
 
     public static void main(String[] args) {
