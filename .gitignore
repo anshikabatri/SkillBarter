@@ -1,0 +1,36 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Logs
+*.log
+
+# Common generated/dependency folders (any level)
+**/node_modules/
+**/.angular/
+**/dist/
+**/coverage/
+**/.cache/
+**/target/
+
+# Frontend (Angular)
+frontend-main/skillbarter-v2/node_modules/
+frontend-main/skillbarter-v2/dist/
+frontend-main/skillbarter-v2/.angular/
+frontend-main/skillbarter-v2/coverage/
+frontend-main/skillbarter-v2/.cache/
+
+# Backend (Spring Boot)
+skillbarter/target/
+skillbarter/.env
+skillbarter/*.env
+skillbarter/src/main/resources/ca.pem

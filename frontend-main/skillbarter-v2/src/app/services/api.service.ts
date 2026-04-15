@@ -1,0 +1,65 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
+
+@Injectable({ providedIn: 'root' })
+export class ApiService {
+  private base = environment.apiUrl;
+  constructor(private http: HttpClient) {}
+
+  // ── USERS ── /api/users
+  getUser(id: number): Observable<any> { return this.http.get(`${this.base}/users/${id}`); }
+  getAllUsers(): Observable<any[]> { return this.http.get<any[]>(`${this.base}/users`); }
+  searchUsers(name: string): Observable<any[]> { return this.http.get<any[]>(`${this.base}/users/search?name=${name}`); }
+  updateUser(id: number, data: any): Observable<any> { return this.http.put(`${this.base}/users/${id}`, data); }
+  addXp(id: number, points: number): Observable<any> { return this.http.patch(`${this.base}/users/${id}/xp?points=${points}`, {}); }
+
+  // ── SKILLS ── /api/skills & /api/user-skills
+  searchSkills(query: string): Observable<any[]> { return this.http.get<any[]>(`${this.base}/skills/search?query=${query}`); }
+  getSkillsByCategory(id: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/skills/category/${id}`); }
+  getUserSkills(userId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/user-skills/${userId}`); }
+  addUserSkill(data: any): Observable<any> { return this.http.post(`${this.base}/user-skills`, data); }
+
+  // ── MATCHES ── /api/matches
+  getMatchesByUser(userId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/matches/user/${userId}`); }
+  getLeaderboard(): Observable<any[]> { return this.http.get<any[]>(`${this.base}/matches/leaderboard`); }
+  createMatch(data: any): Observable<any> { return this.http.post(`${this.base}/matches`, data); }
+
+  // ── SESSIONS ── /api/sessions
+  getSessionsByMentor(id: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/sessions/mentor/${id}`); }
+  getSessionsByLearner(id: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/sessions/learner/${id}`); }
+  createSession(data: any): Observable<any> { return this.http.post(`${this.base}/sessions`, data); }
+  updateSessionStatus(id: number, status: string): Observable<any> { return this.http.patch(`${this.base}/sessions/${id}/status?status=${status}`, {}); }
+
+  // ── MESSAGES ── /api/messages
+  getMessagesBySession(sessionId: number): Observable<any> { return this.http.get(`${this.base}/messages/session/${sessionId}`); }
+  sendMessage(sessionId: number, senderId: number, content: string): Observable<any> {
+    return this.http.post(`${this.base}/messages`, { sessionId, senderId, content });
+  }
+
+  // ── NOTIFICATIONS ── /api/notifications
+  getNotifications(userId: number): Observable<any> { return this.http.get(`${this.base}/notifications/user/${userId}`); }
+  getUnreadNotifications(userId: number): Observable<any> { return this.http.get(`${this.base}/notifications/user/${userId}/unread`); }
+  markNotificationRead(id: number): Observable<any> { return this.http.put(`${this.base}/notifications/${id}/read`, {}); }
+  markAllNotificationsRead(userId: number): Observable<any> { return this.http.put(`${this.base}/notifications/user/${userId}/read-all`, {}); }
+
+  // ── REVIEWS ── /api/reviews
+  getReviewsByReviewee(id: number): Observable<any> { return this.http.get(`${this.base}/reviews/reviewee/${id}`); }
+  getAverageRating(id: number): Observable<any> { return this.http.get(`${this.base}/reviews/reviewee/${id}/average`); }
+  addReview(reviewerId: number, revieweeId: number, rating: number, reviewText: string): Observable<any> {
+    return this.http.post(`${this.base}/reviews`, { reviewerId, revieweeId, rating, reviewText });
+  }
+
+  // ── STORIES ── /api/stories
+  getAllStories(): Observable<any[]> { return this.http.get<any[]>(`${this.base}/stories`); }
+  createStory(data: any): Observable<any> { return this.http.post(`${this.base}/stories`, data); }
+
+  // ── CALENDAR ── /api/calendar
+  getCalendarByUser(userId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/calendar/user/${userId}`); }
+  getUpcomingEvents(userId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/calendar/user/${userId}/upcoming`); }
+  createCalendarEvent(data: any): Observable<any> { return this.http.post(`${this.base}/calendar`, data); }
+
+  // ── TRANSACTIONS ── /api/transactions
+  getTransactionsByUser(userId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/transactions/user/${userId}`); }
+}
