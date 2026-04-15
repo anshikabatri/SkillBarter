@@ -2,12 +2,12 @@ package com.cts.mfrp.skillbarter.util;
 
 import com.cts.mfrp.skillbarter.model.*;
 import com.cts.mfrp.skillbarter.repo.*;
-import com.cts.model.*;
+import com.cts.mfrp.skillbarter.model.*;
 import com.cts.mfrp.skillbarter.model.Notification.NotificationType;
 import com.cts.mfrp.skillbarter.model.Session.SessionStatus;
 import com.cts.mfrp.skillbarter.model.Transaction.PaymentMethod;
 import com.cts.mfrp.skillbarter.model.Transaction.TransactionStatus;
-import com.cts.repo.*;
+import com.cts.mfrp.skillbarter.repo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
