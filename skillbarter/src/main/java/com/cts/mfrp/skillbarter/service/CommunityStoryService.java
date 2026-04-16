@@ -22,7 +22,8 @@ public class CommunityStoryService {
         User user = userRepo.findById(story.getUser().getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         story.setUser(user);
-        return storyRepo.save(story);
+        CommunityStory saved = storyRepo.save(story);
+        return storyRepo.findByIdWithUser(saved.getStoryId()).orElse(saved);
     }
 
     @Transactional(readOnly = true)
@@ -50,7 +51,8 @@ public class CommunityStoryService {
         story.setTitle(updated.getTitle());
         story.setContent(updated.getContent());
         story.setMediaUrl(updated.getMediaUrl());
-        return storyRepo.save(story);
+        CommunityStory saved = storyRepo.save(story);
+        return storyRepo.findByIdWithUser(saved.getStoryId()).orElse(saved);
     }
 
     public void deleteStory(Integer id) {
@@ -60,7 +62,7 @@ public class CommunityStoryService {
     }
 
     private CommunityStory findOrThrow(Integer id) {
-        return storyRepo.findById(id)
+        return storyRepo.findByIdWithUser(id)
                 .orElseThrow(() -> new RuntimeException("Story not found: " + id));
     }
 }

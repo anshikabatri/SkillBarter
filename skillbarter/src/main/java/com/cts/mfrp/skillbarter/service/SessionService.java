@@ -4,6 +4,7 @@ import com.cts.mfrp.skillbarter.model.Session;
 import com.cts.mfrp.skillbarter.model.Session.SessionStatus;
 import com.cts.mfrp.skillbarter.model.Skill;
 import com.cts.mfrp.skillbarter.model.User;
+import com.cts.mfrp.skillbarter.model.Notification;
 import com.cts.mfrp.skillbarter.repo.SessionRepo;
 import com.cts.mfrp.skillbarter.repo.SkillRepo;
 import com.cts.mfrp.skillbarter.repo.UserRepo;
@@ -22,6 +23,7 @@ public class SessionService {
     private final SessionRepo sessionRepo;
     private final UserRepo userRepo;
     private final SkillRepo skillRepo;
+    private final NotificationService notificationService;
 
     public Session createSession(Session session) {
         User mentor  = userRepo.findById(session.getMentor().getUserId())
@@ -35,7 +37,19 @@ public class SessionService {
         session.setLearner(learner);
         session.setSkill(skill);
         session.setStatus(SessionStatus.Scheduled);
-        return sessionRepo.save(session);
+        Session saved = sessionRepo.save(session);
+
+        try {
+            notificationService.createNotification(
+                    mentor.getUserId(),
+                    Notification.NotificationType.Session,
+                    "New session request from " + learner.getName() + " for " + skill.getName() +
+                            " on " + saved.getScheduledAt()
+            );
+        } catch (Exception ignored) {
+        }
+
+        return saved;
     }
 
     @Transactional(readOnly = true)

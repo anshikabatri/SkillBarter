@@ -13,15 +13,17 @@ import java.util.List;
 @Repository
 public interface SessionRepo extends JpaRepository<Session, Integer> {
 
-    List<Session> findByMentor_UserId(Integer mentorId);
+       @Query("SELECT s FROM Session s JOIN FETCH s.mentor JOIN FETCH s.learner JOIN FETCH s.skill WHERE s.mentor.userId = :mentorId ORDER BY s.scheduledAt ASC")
+       List<Session> findByMentor_UserId(@Param("mentorId") Integer mentorId);
 
-    List<Session> findByLearner_UserId(Integer learnerId);
+       @Query("SELECT s FROM Session s JOIN FETCH s.mentor JOIN FETCH s.learner JOIN FETCH s.skill WHERE s.learner.userId = :learnerId ORDER BY s.scheduledAt ASC")
+       List<Session> findByLearner_UserId(@Param("learnerId") Integer learnerId);
 
     List<Session> findByMentor_UserIdAndStatus(Integer mentorId, SessionStatus status);
 
     List<Session> findByLearner_UserIdAndStatus(Integer learnerId, SessionStatus status);
 
-    @Query("SELECT s FROM Session s WHERE (s.mentor.userId = :userId OR s.learner.userId = :userId) " +
+    @Query("SELECT s FROM Session s JOIN FETCH s.mentor JOIN FETCH s.learner JOIN FETCH s.skill WHERE (s.mentor.userId = :userId OR s.learner.userId = :userId) " +
            "AND s.scheduledAt BETWEEN :from AND :to")
     List<Session> findByUserAndDateRange(@Param("userId") Integer userId,
                                          @Param("from") LocalDateTime from,

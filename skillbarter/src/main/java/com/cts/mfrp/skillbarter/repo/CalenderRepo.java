@@ -12,15 +12,16 @@ import java.util.List;
 @Repository
 public interface CalenderRepo extends JpaRepository<Calender, Integer> {
 
-    List<Calender> findByUser_UserId(Integer userId);
+    @Query("SELECT c FROM Calender c JOIN FETCH c.user WHERE c.user.userId = :userId")
+    List<Calender> findByUser_UserId(@Param("userId") Integer userId);
 
-    @Query("SELECT c FROM Calender c WHERE c.user.userId = :userId " +
+    @Query("SELECT c FROM Calender c JOIN FETCH c.user WHERE c.user.userId = :userId " +
            "AND c.eventDate BETWEEN :from AND :to ORDER BY c.eventDate ASC")
     List<Calender> findByUserAndDateRange(@Param("userId") Integer userId,
                                           @Param("from") LocalDateTime from,
                                           @Param("to") LocalDateTime to);
 
-    @Query("SELECT c FROM Calender c WHERE c.user.userId = :userId " +
+    @Query("SELECT c FROM Calender c JOIN FETCH c.user WHERE c.user.userId = :userId " +
            "AND c.eventDate >= :now ORDER BY c.eventDate ASC")
     List<Calender> findUpcomingByUser(@Param("userId") Integer userId,
                                       @Param("now") LocalDateTime now);

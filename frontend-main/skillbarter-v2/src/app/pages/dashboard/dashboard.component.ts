@@ -153,7 +153,7 @@ export class DashboardComponent implements OnInit {
     this.api.getSessionsByLearner(id).subscribe({
       next: d => {
         this.sessions = d||[];
-        this.upcoming = this.sessions.filter(s => ['scheduled','SCHEDULED'].includes((s.status||'').toLowerCase()));
+        this.upcoming = this.sessions.filter(s => (s.status||'').toLowerCase() === 'scheduled');
         this.eventDates = this.sessions.map(s => new Date(s.scheduledAt).getDate());
       }, error: () => {}
     });
@@ -161,7 +161,7 @@ export class DashboardComponent implements OnInit {
       next: d => {
         const mentor = d||[];
         this.sessions = [...this.sessions, ...mentor];
-        const mUpcoming = mentor.filter(s => ['scheduled','SCHEDULED'].includes((s.status||'').toLowerCase()));
+        const mUpcoming = mentor.filter(s => (s.status||'').toLowerCase() === 'scheduled');
         this.upcoming = [...this.upcoming, ...mUpcoming];
       }, error: () => {}
     });

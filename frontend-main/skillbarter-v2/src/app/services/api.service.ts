@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -24,11 +25,16 @@ export class ApiService {
   // ── MATCHES ── /api/matches
   getMatchesByUser(userId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/matches/user/${userId}`); }
   getLeaderboard(): Observable<any[]> { return this.http.get<any[]>(`${this.base}/matches/leaderboard`); }
+  getMatchSuggestions(userId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/matches/suggestions/${userId}`); }
   createMatch(data: any): Observable<any> { return this.http.post(`${this.base}/matches`, data); }
 
   // ── SESSIONS ── /api/sessions
-  getSessionsByMentor(id: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/sessions/mentor/${id}`); }
-  getSessionsByLearner(id: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/sessions/learner/${id}`); }
+  getSessionsByMentor(id: number): Observable<any[]> {
+    return this.http.get(`${this.base}/sessions/mentor/${id}`).pipe(map((res: any) => res?.data || res || []));
+  }
+  getSessionsByLearner(id: number): Observable<any[]> {
+    return this.http.get(`${this.base}/sessions/learner/${id}`).pipe(map((res: any) => res?.data || res || []));
+  }
   createSession(data: any): Observable<any> { return this.http.post(`${this.base}/sessions`, data); }
   updateSessionStatus(id: number, status: string): Observable<any> { return this.http.patch(`${this.base}/sessions/${id}/status?status=${status}`, {}); }
 
@@ -39,10 +45,10 @@ export class ApiService {
   }
 
   // ── NOTIFICATIONS ── /api/notifications
-  getNotifications(userId: number): Observable<any> { return this.http.get(`${this.base}/notifications/user/${userId}`); }
-  getUnreadNotifications(userId: number): Observable<any> { return this.http.get(`${this.base}/notifications/user/${userId}/unread`); }
-  markNotificationRead(id: number): Observable<any> { return this.http.put(`${this.base}/notifications/${id}/read`, {}); }
-  markAllNotificationsRead(userId: number): Observable<any> { return this.http.put(`${this.base}/notifications/user/${userId}/read-all`, {}); }
+  getNotifications(userId: number): Observable<any[]> { return this.http.get(`${this.base}/notifications/user/${userId}`).pipe(map((res: any) => res?.data || res || [])); }
+  getUnreadNotifications(userId: number): Observable<any[]> { return this.http.get(`${this.base}/notifications/user/${userId}/unread`).pipe(map((res: any) => res?.data || res || [])); }
+  markNotificationRead(id: number): Observable<any> { return this.http.put(`${this.base}/notifications/${id}/read`, {}).pipe(map((res: any) => res?.data || res || {})); }
+  markAllNotificationsRead(userId: number): Observable<any> { return this.http.put(`${this.base}/notifications/user/${userId}/read-all`, {}).pipe(map((res: any) => res?.data || res || {})); }
 
   // ── REVIEWS ── /api/reviews
   getReviewsByReviewee(id: number): Observable<any> { return this.http.get(`${this.base}/reviews/reviewee/${id}`); }

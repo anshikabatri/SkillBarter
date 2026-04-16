@@ -34,10 +34,18 @@ public class UserService {
 
     public User updateProfile(Integer id, User updated) {
         User user = findOrThrow(id);
-        user.setName(updated.getName());
-        user.setBio(updated.getBio());
-        user.setProfilePhotoUrl(updated.getProfilePhotoUrl());
-        user.setLanguagesSpoken(updated.getLanguagesSpoken());
+        if (updated.getName() != null && !updated.getName().isBlank()) {
+            user.setName(updated.getName());
+        }
+        if (updated.getBio() != null) {
+            user.setBio(updated.getBio());
+        }
+        if (updated.getProfilePhotoUrl() != null) {
+            user.setProfilePhotoUrl(updated.getProfilePhotoUrl());
+        }
+        if (updated.getLanguagesSpoken() != null) {
+            user.setLanguagesSpoken(updated.getLanguagesSpoken());
+        }
         return userRepo.save(user);
     }
 

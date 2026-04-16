@@ -28,7 +28,7 @@ template:`
     <div class="contrib-card card" *ngFor="let u of topUsers;let i=index">
       <div class="rank">#{{ i+1 }}</div>
       <div class="cav" [style.background]="gc(u.name)">{{ u.name?.charAt(0) }}</div>
-      <div class="cinfo"><div class="cname">{{ u.name }}</div><div class="cxp">{{ u.xpPoints||u.skillPoints||0 }} XP</div></div>
+      <div class="cinfo"><div class="cname">{{ u.name }}</div><div class="cxp">{{ u.xp||u.xpPoints||u.skillPoints||0 }} XP</div></div>
     </div>
   </div>
 </div>`,
@@ -42,7 +42,7 @@ export class CommunityComponent implements OnInit {
   constructor(private auth:AuthService,private api:ApiService){}
   ngOnInit(){
     this.api.getAllStories().subscribe({next:d=>{this.stories=d||[];this.loading=false;},error:()=>this.loading=false});
-    this.api.getAllUsers().subscribe({next:d=>{this.topUsers=(d||[]).sort((a:any,b:any)=>((b.xpPoints||b.skillPoints||0)-(a.xpPoints||a.skillPoints||0))).slice(0,6);},error:()=>{}});
+    this.api.getAllUsers().subscribe({next:d=>{this.topUsers=(d||[]).sort((a:any,b:any)=>((b.xp||b.xpPoints||b.skillPoints||0)-(a.xp||a.xpPoints||a.skillPoints||0))).slice(0,6);},error:()=>{}});
   }
   submitStory(){
     const u=this.auth.currentUser;

@@ -13,7 +13,7 @@ import { ApiService } from '../../services/api.service';
       <div class="topbar-center">
         <div class="sp-badge">
           <span class="sp-label">SP</span>
-          <span class="sp-value">{{ user?.skillPoints || 0 }} SP</span>
+          <span class="sp-value">{{ user?.xp || user?.xpPoints || user?.skillPoints || 0 }} SP</span>
         </div>
       </div>
       <div class="topbar-right">
@@ -53,7 +53,7 @@ import { ApiService } from '../../services/api.service';
         <div class="notif-empty" *ngIf="notifications.length===0">No notifications yet</div>
         <div class="notif-item" *ngFor="let n of notifications" [class.unread]="!n.isRead" (click)="markRead(n)">
           <div class="notif-title">{{ n.type || 'Notification' }}</div>
-          <div class="notif-msg">{{ n.message }}</div>
+          <div class="notif-msg">{{ n.content || n.message }}</div>
         </div>
       </div>
     </header>
@@ -99,10 +99,20 @@ export class TopbarComponent implements OnInit {
 
   ngOnInit() {
     this.auth.currentUser$.subscribe(u => { this.user = u; if (u?.userId) this.loadNotifs(u.userId); });
+    if (!this.auth.currentUser && this.auth.isLoggedIn) {
+      this.auth.resolveAndStoreCurrentUser().subscribe({ next: () => {}, error: () => {} });
+    }
   }
 
   loadNotifs(userId: number) {
-    this.api.getNotifications(userId).subscribe({ next: (res: any) => { this.notifications = res?.data || res || []; this.unreadCount = this.notifications.filter((n: any) => !n.isRead).length; }, error: () => {} });
+    this.api.getNotifications(userId).subscribe({
+      next: (res: any) => {
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        this.notifications = list.map((n: any) => ({ ...n, message: n?.message || n?.content }));
+        this.unreadCount = this.notifications.filter((n: any) => !n.isRead).length;
+      },
+      error: () => {}
+    });
   }
 
   markRead(n: any) {

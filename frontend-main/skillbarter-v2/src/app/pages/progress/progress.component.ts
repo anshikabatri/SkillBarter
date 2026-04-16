@@ -54,12 +54,12 @@ styles:[`.prog-page{display:flex;flex-direction:column;gap:20px;max-width:1000px
 export class ProgressComponent implements OnInit {
   sessions:any[]=[]; xp=0; level=1; levelName='Newcomer'; nextLevelName='Apprentice'; nextXp=400;
   get xpPercent(){return Math.min(100,(this.xp/this.nextXp)*100);}
-  get completed(){return this.sessions.filter(s=>['completed','COMPLETED'].includes((s.status||'').toLowerCase())).length;}
+  get completed(){return this.sessions.filter(s=>(s.status||'').toLowerCase()==='completed').length;}
   goals=[{icon:'🎯',name:'Earn "Initiator"',desc:'Complete your first session'},{icon:'⬆️',name:'Reach Level 2',desc:`${400} XP needed`},{icon:'🤝',name:'Connect with 5 people',desc:'Build your network'}];
   constructor(private auth:AuthService,private api:ApiService){}
   ngOnInit(){
     const u=this.auth.currentUser;
-    if(u){this.xp=u.xpPoints||u.skillPoints||0;this.updateLevel();if(u.userId){this.api.getSessionsByLearner(u.userId).subscribe({next:d=>{this.sessions=d||[];this.api.getSessionsByMentor(u.userId!).subscribe({next:d2=>{this.sessions=[...this.sessions,...(d2||[])];},error:()=>{}});},error:()=>{}});}}
+    if(u){this.xp=u.xp||u.xpPoints||u.skillPoints||0;this.updateLevel();if(u.userId){this.api.getSessionsByLearner(u.userId).subscribe({next:d=>{this.sessions=d||[];this.api.getSessionsByMentor(u.userId!).subscribe({next:d2=>{this.sessions=[...this.sessions,...(d2||[])];},error:()=>{}});},error:()=>{}});}}
   }
   updateLevel(){const lvls=[{l:1,n:'Newcomer',xp:0,next:400,nn:'Apprentice'},{l:2,n:'Apprentice',xp:400,next:1000,nn:'Practitioner'},{l:3,n:'Practitioner',xp:1000,next:2500,nn:'Expert'},{l:4,n:'Expert',xp:2500,next:5000,nn:'Master'}];const cur=lvls.filter(l=>this.xp>=l.xp).pop()||lvls[0];this.level=cur.l;this.levelName=cur.n;this.nextXp=cur.next;this.nextLevelName=cur.nn;}
 }

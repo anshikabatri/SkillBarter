@@ -79,10 +79,11 @@ export class ProfileSetupComponent implements OnInit {
   removeL(s: string) { this.learnSkills = this.learnSkills.filter(x => x !== s); }
   save() {
     if (!this.form.name) { this.error = 'Please enter your name.'; return; }
+    if (!this.user?.userId) { this.error = 'Please sign in again.'; return; }
     this.loading = true;
     this.api.updateUser(this.user?.userId, { name: this.form.name, bio: this.form.bio, email: this.user?.email }).subscribe({
-      next: (u) => { this.auth.setUser(u); this.router.navigate(['/app/dashboard']); },
-      error: () => this.router.navigate(['/app/dashboard'])
+      next: (u) => { this.loading = false; this.auth.setUser(u); this.router.navigate(['/app/dashboard']); },
+      error: () => { this.loading = false; this.router.navigate(['/app/dashboard']); }
     });
   }
 }

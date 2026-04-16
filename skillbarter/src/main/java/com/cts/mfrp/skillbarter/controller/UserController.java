@@ -3,6 +3,7 @@ package com.cts.mfrp.skillbarter.controller;
 import com.cts.mfrp.skillbarter.model.User;
 import com.cts.mfrp.skillbarter.service.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,12 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<User> updateProfile(
             @PathVariable Integer id,
-            @Valid @RequestBody User updated) {
+            @Valid @RequestBody ProfileUpdateRequest req) {
+        User updated = new User();
+        updated.setName(req.getName());
+        updated.setBio(req.getBio());
+        updated.setProfilePhotoUrl(req.getProfilePhotoUrl());
+        updated.setLanguagesSpoken(req.getLanguagesSpoken());
         return ResponseEntity.ok(userService.updateProfile(id, updated));
     }
 
@@ -69,5 +75,16 @@ public class UserController {
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor
     public static class PasswordRequest {
         private String password;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class ProfileUpdateRequest {
+        @NotBlank
+        private String name;
+        private String bio;
+        private String profilePhotoUrl;
+        private String languagesSpoken;
+        // kept for frontend compatibility; not used in update
+        private String email;
     }
 }

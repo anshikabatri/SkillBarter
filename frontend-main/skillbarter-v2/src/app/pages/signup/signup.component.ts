@@ -50,9 +50,14 @@ export class SignupComponent {
     if (this.password.length < 6) { this.error = 'Password must be at least 6 characters.'; return; }
     this.loading = true; this.error = '';
     this.auth.register(this.name, this.email, this.password).subscribe({
-      next: (user) => {
+      next: () => {
         this.auth.login(this.email, this.password).subscribe({
-          next: () => { this.auth.setUser(user); this.router.navigate(['/profile-setup']); },
+          next: () => {
+            this.auth.resolveAndStoreCurrentUser().subscribe({
+              next: () => { this.loading = false; this.router.navigate(['/profile-setup']); },
+              error: () => { this.loading = false; this.router.navigate(['/profile-setup']); }
+            });
+          },
           error: () => { this.loading = false; this.router.navigate(['/login']); }
         });
       },

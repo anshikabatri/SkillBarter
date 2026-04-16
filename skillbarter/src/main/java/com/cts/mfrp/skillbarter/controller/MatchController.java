@@ -52,6 +52,12 @@ public class MatchController {
         return ResponseEntity.ok(matchService.getAllOrderedByScore());
     }
 
+    // GET /api/matches/suggestions/{userId}
+    @GetMapping("/suggestions/{userId}")
+    public ResponseEntity<List<MatchService.MatchSuggestionDto>> getSuggestions(@PathVariable Integer userId) {
+        return ResponseEntity.ok(matchService.getSuggestions(userId));
+    }
+
     // PATCH /api/matches/{id}/score?score=92.00
     @PatchMapping("/{id}/score")
     public ResponseEntity<Match> updateScore(
