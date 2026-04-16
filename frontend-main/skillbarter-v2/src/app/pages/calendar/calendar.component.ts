@@ -55,11 +55,18 @@ template: `
         <div class="si-time">{{ s.scheduledAt | date:'MMM d, y · h:mm a' }}</div>
         <div class="si-with">with {{ withUser(s) }}</div>
       </div>
+      <button class="ack-btn" *ngIf="tab==='upcoming' && ((s.status||'').toLowerCase()==='scheduled')"
+              [disabled]="completingSessionId===s.sessionId"
+              (click)="markComplete(s)">
+        {{ completingSessionId===s.sessionId ? 'Saving...' : 'Mark as Complete' }}
+      </button>
       <span class="sbadge" [class]="(s.status||'').toLowerCase()">{{ s.status }}</span>
     </div>
+    <div class="success" *ngIf="statusSuccess">{{ statusSuccess }}</div>
+    <div class="empty" *ngIf="statusError">{{ statusError }}</div>
   </div>
 </div>`,
-styles: [`.cal-page{display:flex;gap:20px;align-items:flex-start}.card{background:var(--card);border-radius:16px;border:1px solid var(--border);padding:22px}.cal-card{flex:1}.calh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.ct{font-size:16px;font-weight:700;font-family:'Syne',sans-serif}.cn{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer}.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:20px}.dn{text-align:center;font-size:11px;color:var(--text3);padding:6px 0;font-weight:600}.cd{text-align:center;padding:9px 2px;border-radius:8px;font-size:14px;cursor:pointer;transition:background 0.15s}.cd:hover:not(.other){background:var(--bg3)}.cd.today{background:var(--blue);color:white;border-radius:50%;font-weight:700}.cd.other{color:var(--text3)}.new-btn{display:block;text-align:center;width:100%;padding:13px;border-radius:10px;text-decoration:none}.req-box{margin-top:14px;border:1px solid var(--border2);border-radius:12px;padding:14px;background:var(--bg3)}.req-box h4{font-size:14px;font-weight:700;margin-bottom:10px}.req-grid{display:grid;grid-template-columns:1fr;gap:10px}.req-actions{display:flex;gap:8px;margin-top:10px}.btn-secondary{padding:10px 14px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer}.success{color:var(--green);font-size:13px;padding-top:8px}.sess-card{width:300px}.stabs{display:flex;gap:6px;margin-bottom:18px}.stabs button{padding:7px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer}.stabs button.active{background:var(--blue);color:white;border-color:var(--blue)}.loading,.empty{color:var(--text2);font-size:13px;padding:12px 0}.sitem{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--border2)}.si-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}.si-dot.scheduled,.si-dot.SCHEDULED{background:var(--blue)}.si-dot.completed,.si-dot.COMPLETED{background:var(--green)}.si-dot.cancelled,.si-dot.CANCELLED{background:var(--red)}.si-info{flex:1}.si-name{font-size:14px;font-weight:600;margin-bottom:3px}.si-time,.si-with{font-size:12px;color:var(--text2)}.sbadge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}.sbadge.scheduled,.sbadge.SCHEDULED{background:rgba(59,130,246,0.15);color:var(--blue)}.sbadge.completed,.sbadge.COMPLETED{background:rgba(16,185,129,0.15);color:var(--green)}.sbadge.cancelled,.sbadge.CANCELLED{background:rgba(239,68,68,0.15);color:var(--red)}`]
+styles: [`.cal-page{display:flex;gap:20px;align-items:flex-start}.card{background:var(--card);border-radius:16px;border:1px solid var(--border);padding:22px}.cal-card{flex:1}.calh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.ct{font-size:16px;font-weight:700;font-family:'Syne',sans-serif}.cn{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer}.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:20px}.dn{text-align:center;font-size:11px;color:var(--text3);padding:6px 0;font-weight:600}.cd{text-align:center;padding:9px 2px;border-radius:8px;font-size:14px;cursor:pointer;transition:background 0.15s}.cd:hover:not(.other){background:var(--bg3)}.cd.today{background:var(--blue);color:white;border-radius:50%;font-weight:700}.cd.other{color:var(--text3)}.new-btn{display:block;text-align:center;width:100%;padding:13px;border-radius:10px;text-decoration:none}.req-box{margin-top:14px;border:1px solid var(--border2);border-radius:12px;padding:14px;background:var(--bg3)}.req-box h4{font-size:14px;font-weight:700;margin-bottom:10px}.req-grid{display:grid;grid-template-columns:1fr;gap:10px}.req-actions{display:flex;gap:8px;margin-top:10px}.btn-secondary{padding:10px 14px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer}.success{color:var(--green);font-size:13px;padding-top:8px}.sess-card{width:300px}.stabs{display:flex;gap:6px;margin-bottom:18px}.stabs button{padding:7px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer}.stabs button.active{background:var(--blue);color:white;border-color:var(--blue)}.loading,.empty{color:var(--text2);font-size:13px;padding:12px 0}.sitem{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--border2)}.si-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}.si-dot.scheduled,.si-dot.SCHEDULED{background:var(--blue)}.si-dot.completed,.si-dot.COMPLETED{background:var(--green)}.si-dot.cancelled,.si-dot.CANCELLED{background:var(--red)}.si-info{flex:1}.si-name{font-size:14px;font-weight:600;margin-bottom:3px}.si-time,.si-with{font-size:12px;color:var(--text2)}.ack-btn{border:1px solid var(--green);background:rgba(16,185,129,0.15);color:var(--green);font-size:11px;font-weight:700;padding:5px 8px;border-radius:8px;cursor:pointer;align-self:center;white-space:nowrap}.ack-btn:disabled{opacity:0.6;cursor:not-allowed}.sbadge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}.sbadge.scheduled,.sbadge.SCHEDULED{background:rgba(59,130,246,0.15);color:var(--blue)}.sbadge.completed,.sbadge.COMPLETED{background:rgba(16,185,129,0.15);color:var(--green)}.sbadge.cancelled,.sbadge.CANCELLED{background:rgba(239,68,68,0.15);color:var(--red)}`]
 })
 export class CalendarComponent implements OnInit {
   dns=['Su','Mo','Tu','We','Th','Fr','Sa']; ms=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -74,6 +81,9 @@ export class CalendarComponent implements OnInit {
   request = { mentorId: null as number | null, skillId: null as number | null, scheduledAt: '' };
   requestError = '';
   requestSuccess = '';
+  completingSessionId: number | null = null;
+  statusSuccess = '';
+  statusError = '';
   get filtered(){return this.sessions.filter(s=>this.tab==='upcoming'?(s.status||'').toLowerCase()==='scheduled':['completed','cancelled'].includes((s.status||'').toLowerCase()));}
   constructor(private auth:AuthService,private api:ApiService){}
   ngOnInit(){
@@ -197,6 +207,34 @@ export class CalendarComponent implements OnInit {
       }
     });
   }
+
+  markComplete(session: any){
+    this.statusError = '';
+    this.statusSuccess = '';
+    const id = Number(session?.sessionId);
+    if (!id) return;
+    if (!confirm('Mark this session as completed? Both users will receive XP.')) return;
+
+    this.completingSessionId = id;
+    this.api.updateSessionStatus(id, 'Completed').subscribe({
+      next: () => {
+        this.statusSuccess = 'Session completed. +50 XP awarded.';
+        if (this.userId) {
+          this.api.getUser(this.userId).subscribe({
+            next: (u:any) => this.auth.setUser(u),
+            error: () => {}
+          });
+        }
+        if (this.userId) this.load(this.userId);
+        this.completingSessionId = null;
+      },
+      error: (e:any) => {
+        this.statusError = e?.error?.message || 'Failed to update session status.';
+        this.completingSessionId = null;
+      }
+    });
+  }
+
   buildCal(){const f=new Date(this.cy,this.cm,1),l=new Date(this.cy,this.cm+1,0);const d:any[]=[];for(let i=0;i<f.getDay();i++)d.push({d:'',c:false});for(let x=1;x<=l.getDate();x++)d.push({d:x,c:true});const r=7-(d.length%7);if(r<7)for(let i=1;i<=r;i++)d.push({d:i,c:false});this.days=d;}
   isTd(d:any){return d.c&&d.d===this.today.getDate()&&this.cm===this.today.getMonth()&&this.cy===this.today.getFullYear();}
   prev(){if(this.cm===0){this.cm=11;this.cy--;}else this.cm--;this.buildCal();}

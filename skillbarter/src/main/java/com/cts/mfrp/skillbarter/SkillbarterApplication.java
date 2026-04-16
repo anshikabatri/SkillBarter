@@ -20,6 +20,6 @@ public class SkillbarterApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(SkillbarterApplication.class, args);
-        System.out.println("App running successfully on port 8081");
+        System.out.println("App running successfully on port 8082");
     }
 }

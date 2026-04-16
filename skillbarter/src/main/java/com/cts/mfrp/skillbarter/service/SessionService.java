@@ -20,6 +20,8 @@ import java.util.List;
 @Transactional
 public class SessionService {
 
+    private static final int COMPLETION_XP = 50;
+
     private final SessionRepo sessionRepo;
     private final UserRepo userRepo;
     private final SkillRepo skillRepo;
@@ -76,7 +78,36 @@ public class SessionService {
 
     public Session updateSessionStatus(Integer id, SessionStatus status) {
         Session session = findOrThrow(id);
+        SessionStatus previousStatus = session.getStatus();
         session.setStatus(status);
+
+        // Award XP only once per session when it first moves to Completed
+        if (status == SessionStatus.Completed && previousStatus != SessionStatus.Completed) {
+            User mentor = session.getMentor();
+            User learner = session.getLearner();
+
+            mentor.setXp((mentor.getXp() == null ? 0 : mentor.getXp()) + COMPLETION_XP);
+            learner.setXp((learner.getXp() == null ? 0 : learner.getXp()) + COMPLETION_XP);
+
+            userRepo.save(mentor);
+            userRepo.save(learner);
+
+            try {
+                String skillName = session.getSkill() != null ? session.getSkill().getName() : "session";
+                notificationService.createNotification(
+                        mentor.getUserId(),
+                        Notification.NotificationType.Session,
+                        "Session marked completed for " + skillName + ". You earned " + COMPLETION_XP + " XP."
+                );
+                notificationService.createNotification(
+                        learner.getUserId(),
+                        Notification.NotificationType.Session,
+                        "Session marked completed for " + skillName + ". You earned " + COMPLETION_XP + " XP."
+                );
+            } catch (Exception ignored) {
+            }
+        }
+
         return sessionRepo.save(session);
     }
 

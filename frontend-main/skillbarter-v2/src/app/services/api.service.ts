@@ -51,8 +51,12 @@ export class ApiService {
   markAllNotificationsRead(userId: number): Observable<any> { return this.http.put(`${this.base}/notifications/user/${userId}/read-all`, {}).pipe(map((res: any) => res?.data || res || {})); }
 
   // ── REVIEWS ── /api/reviews
-  getReviewsByReviewee(id: number): Observable<any> { return this.http.get(`${this.base}/reviews/reviewee/${id}`); }
-  getAverageRating(id: number): Observable<any> { return this.http.get(`${this.base}/reviews/reviewee/${id}/average`); }
+  getReviewsByReviewee(id: number): Observable<any[]> {
+    return this.http.get(`${this.base}/reviews/reviewee/${id}`).pipe(map((res: any) => res?.data || res || []));
+  }
+  getAverageRating(id: number): Observable<number> {
+    return this.http.get(`${this.base}/reviews/reviewee/${id}/average`).pipe(map((res: any) => Number(res?.data ?? res ?? 0) || 0));
+  }
   addReview(reviewerId: number, revieweeId: number, rating: number, reviewText: string): Observable<any> {
     return this.http.post(`${this.base}/reviews`, { reviewerId, revieweeId, rating, reviewText });
   }
