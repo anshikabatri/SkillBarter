@@ -2,6 +2,7 @@ package com.cts.mfrp.skillbarter.service;
 
 import com.cts.mfrp.skillbarter.model.Message;
 import com.cts.mfrp.skillbarter.model.Session;
+import com.cts.mfrp.skillbarter.model.User;
 import com.cts.mfrp.skillbarter.repo.MessageRepo;
 import com.cts.mfrp.skillbarter.repo.SessionRepo;
 import com.cts.mfrp.skillbarter.repo.UserRepo;
@@ -25,12 +26,12 @@ public class MessageService {
     public Message sendMessage(Integer sessionId, Integer senderId, String content) {
         Session session = sessionRepo.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Session not found with id: " + sessionId));
-        //User sender = userRepo.findById(senderId)
-         //       .orElseThrow(() -> new RuntimeException("User not found with id: " + senderId));
+        User sender = userRepo.findById(senderId)
+            .orElseThrow(() -> new RuntimeException("User not found with id: " + senderId));
 
         Message message = new Message();
         message.setSession(session);
-        //message.setSender(sender);
+        message.setSender(sender);
         message.setContent(content);
         return messageRepo.save(message);
     }

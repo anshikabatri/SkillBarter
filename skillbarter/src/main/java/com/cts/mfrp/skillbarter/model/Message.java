@@ -1,5 +1,6 @@
 package com.cts.mfrp.skillbarter.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -14,10 +15,12 @@ public class Message {
 
     @ManyToOne
     @JoinColumn(name = "session_id", nullable = false)
+    @JsonIgnoreProperties({"mentor", "learner", "skill", "hibernateLazyInitializer", "handler"})
     private Session session;
 
     @ManyToOne
     @JoinColumn(name = "sender_id", nullable = false)
+    @JsonIgnoreProperties({"passwordHash", "bio", "profilePhotoUrl", "languagesSpoken", "createdAt", "hibernateLazyInitializer", "handler"})
     private User sender;
 
     @Column(nullable = false, columnDefinition = "TEXT")

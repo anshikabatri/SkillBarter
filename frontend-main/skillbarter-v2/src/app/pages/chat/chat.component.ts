@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { Subscription, interval } from 'rxjs';
 
 @Component({
   selector: 'app-chat',
@@ -30,7 +31,7 @@ import { AuthService } from '../../services/auth.service';
           <div class="chav" [style.background]="gc(getOther(selected))">{{ getOther(selected)?.charAt(0) }}</div>
           <div><h3>{{ getOther(selected) }}</h3><span class="skill-tag">{{ selected.skill?.name }}</span></div>
         </div>
-        <div class="messages">
+        <div class="messages" #messagesContainer>
           <div class="loading" *ngIf="loadingMsgs">Loading messages...</div>
           <div class="empty-m" *ngIf="!loadingMsgs&&messages.length===0">No messages yet. Say hello!</div>
           <div *ngFor="let m of messages" class="msg" [class.mine]="m.sender?.userId===me?.userId" [class.theirs]="m.sender?.userId!==me?.userId">
@@ -84,11 +85,13 @@ import { AuthService } from '../../services/auth.service';
     .nc-icon { font-size:48px; opacity:0.3; }
   `]
 })
-export class ChatComponent implements OnInit {
+export class ChatComponent implements OnInit, OnDestroy {
   sessions: any[] = []; selected: any = null;
   messages: any[] = []; newMsg = ''; search = '';
   loadingSessions = true; loadingMsgs = false;
   me: any;
+  pollSub?: Subscription;
+  @ViewChild('messagesContainer') messagesContainer?: ElementRef<HTMLDivElement>;
   colors = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4'];
   gc(n: string = '') { return this.colors[(n?.charCodeAt(0)||0) % this.colors.length]; }
 
@@ -96,7 +99,35 @@ export class ChatComponent implements OnInit {
 
   ngOnInit() {
     this.me = this.auth.currentUser;
-    if (this.me?.userId) this.loadSessions();
+    if (this.me?.userId) {
+      this.loadSessions();
+      this.startPolling();
+      return;
+    }
+    if (this.auth.isLoggedIn) {
+      this.auth.resolveAndStoreCurrentUser().subscribe({
+        next: (u) => {
+          this.me = u;
+          this.loadSessions();
+          this.startPolling();
+        },
+        error: () => { this.loadingSessions = false; }
+      });
+      return;
+    }
+    this.loadingSessions = false;
+  }
+
+  ngOnDestroy(): void {
+    this.pollSub?.unsubscribe();
+  }
+
+  startPolling() {
+    this.pollSub?.unsubscribe();
+    this.pollSub = interval(2500).subscribe(() => {
+      if (this.me?.userId) this.refreshSessionsSilently();
+      if (this.selected?.sessionId) this.refreshMessagesSilently(this.selected.sessionId);
+    });
   }
 
   loadSessions() {
@@ -114,6 +145,24 @@ export class ChatComponent implements OnInit {
     });
   }
 
+  refreshSessionsSilently() {
+    const id = this.me?.userId;
+    if (!id) return;
+    this.api.getSessionsByLearner(id).subscribe({
+      next: d => {
+        const learner = d || [];
+        this.api.getSessionsByMentor(id).subscribe({
+          next: d2 => {
+            this.sessions = [...learner, ...(d2 || [])]
+              .filter((s, idx, arr) => arr.findIndex(x => x.sessionId === s.sessionId) === idx);
+          },
+          error: () => {}
+        });
+      },
+      error: () => {}
+    });
+  }
+
   get filtered() {
     if (!this.search) return this.sessions;
     return this.sessions.filter(s => this.getOther(s)?.toLowerCase().includes(this.search.toLowerCase()));
@@ -128,8 +177,26 @@ export class ChatComponent implements OnInit {
   selectSession(s: any) {
     this.selected = s; this.messages = []; this.loadingMsgs = true;
     this.api.getMessagesBySession(s.sessionId).subscribe({
-      next: (res: any) => { this.messages = res?.data || res || []; this.loadingMsgs = false; },
+      next: (res: any) => {
+        this.messages = (res?.data || res || []).map((m: any) => ({ ...m, sender: m?.sender || {} }));
+        this.loadingMsgs = false;
+        this.scrollToLatestMessage();
+      },
       error: () => this.loadingMsgs = false
+    });
+  }
+
+  refreshMessagesSilently(sessionId: number) {
+    this.api.getMessagesBySession(sessionId).subscribe({
+      next: (res: any) => {
+        const incoming = (res?.data || res || []).map((m: any) => ({ ...m, sender: m?.sender || {} }));
+        const currentLen = this.messages.length;
+        this.messages = incoming;
+        if (incoming.length > currentLen) {
+          this.scrollToLatestMessage();
+        }
+      },
+      error: () => {}
     });
   }
 
@@ -137,8 +204,21 @@ export class ChatComponent implements OnInit {
     if (!this.newMsg.trim() || !this.selected) return;
     const content = this.newMsg; this.newMsg = '';
     this.api.sendMessage(this.selected.sessionId, this.me.userId, content).subscribe({
-      next: (res: any) => { this.messages.push(res?.data || { content, sender: this.me, sentAt: new Date() }); },
+      next: (res: any) => {
+        this.messages.push(res?.data || { content, sender: this.me, sentAt: new Date() });
+        this.refreshMessagesSilently(this.selected.sessionId);
+        this.scrollToLatestMessage();
+      },
       error: () => { this.messages.push({ content, sender: this.me, sentAt: new Date() }); }
     });
+  }
+
+  private scrollToLatestMessage() {
+    setTimeout(() => {
+      const container = this.messagesContainer?.nativeElement;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }, 0);
   }
 }
