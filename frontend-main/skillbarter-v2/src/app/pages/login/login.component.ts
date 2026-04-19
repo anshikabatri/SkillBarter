@@ -17,6 +17,7 @@ import { AuthService } from '../../services/auth.service';
         <p class="sub">Sign in to continue exchanging skills</p>
         <div class="form-group"><label>Email</label><input type="email" [(ngModel)]="email" class="input" placeholder="you@domain.com" (keyup.enter)="login()"></div>
         <div class="form-group"><label>Password</label><input type="password" [(ngModel)]="password" class="input" placeholder="Your password" (keyup.enter)="login()"></div>
+        <div class="forgot-wrap"><a routerLink="/forgot-password">Forgot password?</a></div>
         <div class="error-box" *ngIf="error">{{ error }}</div>
         <button class="btn-primary w100" (click)="login()" [disabled]="loading">{{ loading ? 'Signing in...' : 'Sign In' }}</button>
         <p class="switch">Don't have an account? <a routerLink="/signup">Sign Up</a></p>
@@ -32,6 +33,8 @@ import { AuthService } from '../../services/auth.service';
     .sub { color:var(--text2); font-size:14px; margin-bottom:28px; }
     .form-group { margin-bottom:14px; }
     label { display:block; font-size:13px; color:var(--text2); margin-bottom:6px; font-weight:500; }
+    .forgot-wrap { text-align:right; margin-bottom:10px; margin-top:-4px; }
+    .forgot-wrap a { color:var(--blue); font-size:13px; font-weight:600; }
     .w100 { width:100%; padding:13px; font-size:15px; margin-top:6px; }
     .switch { text-align:center; color:var(--text2); font-size:14px; margin-top:18px; }
     .switch a { color:var(--blue); font-weight:600; }

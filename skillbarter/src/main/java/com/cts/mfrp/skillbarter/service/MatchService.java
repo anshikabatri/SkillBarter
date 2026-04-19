@@ -1,7 +1,6 @@
 package com.cts.mfrp.skillbarter.service;
 
 import com.cts.mfrp.skillbarter.model.Match;
-import com.cts.mfrp.skillbarter.model.Skill;
 import com.cts.mfrp.skillbarter.model.User;
 import com.cts.mfrp.skillbarter.model.UserSkill;
 import com.cts.mfrp.skillbarter.repo.MatchRepo;
@@ -102,14 +101,29 @@ public class MatchService {
         Set<Integer> bTeach = extractSkillIds(b, true, false);
         Set<Integer> bLearn = extractSkillIds(b, false, true);
 
-        int reciprocal = intersectionCount(aTeach, bLearn) + intersectionCount(aLearn, bTeach);
-        int oneWay = intersectionCount(aTeach, bTeach) + intersectionCount(aLearn, bLearn);
+        int u1NeedsMetByU2 = intersectionCount(aLearn, bTeach);
+        int u2NeedsMetByU1 = intersectionCount(bLearn, aTeach);
+        int totalNeeds = aLearn.size() + bLearn.size();
 
-        int basePool = aTeach.size() + aLearn.size() + bTeach.size() + bLearn.size();
-        if (basePool == 0) return BigDecimal.ZERO;
+        if (totalNeeds == 0) {
+            int sharedTeachingAbility = intersectionCount(aTeach, bTeach);
+            int sharedLearningInterest = intersectionCount(aLearn, bLearn);
+            int fallbackPool = aTeach.size() + aLearn.size() + bTeach.size() + bLearn.size();
+            if (fallbackPool == 0) return BigDecimal.ZERO;
+            double fallbackScore = ((sharedTeachingAbility * 0.25) + (sharedLearningInterest * 0.25)) / fallbackPool;
+            return BigDecimal.valueOf(Math.min(100.0, Math.max(0.0, fallbackScore * 100.0))).setScale(2, RoundingMode.HALF_UP);
+        }
 
-        double weighted = (reciprocal * 2.0 + oneWay * 0.5) / basePool;
-        double pct = Math.min(100.0, Math.max(0.0, weighted * 100.0));
+        double reciprocalFit = (u1NeedsMetByU2 + u2NeedsMetByU1) / (double) totalNeeds;
+        double coverageBonus = 0.0;
+        if (aLearn.size() > 0) {
+            coverageBonus += (u1NeedsMetByU2 / (double) aLearn.size()) * 0.2;
+        }
+        if (bLearn.size() > 0) {
+            coverageBonus += (u2NeedsMetByU1 / (double) bLearn.size()) * 0.2;
+        }
+
+        double pct = Math.min(100.0, Math.max(0.0, (reciprocalFit * 0.8 + coverageBonus) * 100.0));
         return BigDecimal.valueOf(pct).setScale(2, RoundingMode.HALF_UP);
     }
 

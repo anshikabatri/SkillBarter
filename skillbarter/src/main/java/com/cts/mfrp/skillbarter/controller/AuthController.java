@@ -34,6 +34,25 @@ public class AuthController {
         return ResponseEntity.ok(new LoginResponse(token));
     }
 
+    // POST /api/auth/forgot-password
+    // Body: { "email": "john@mail.com" }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
+        String resetToken = authService.createPasswordResetToken(req.getEmail());
+        return ResponseEntity.ok(new ForgotPasswordResponse(
+                "Password reset token generated. Use it to reset your password.",
+                resetToken
+        ));
+    }
+
+    // POST /api/auth/reset-password
+    // Body: { "token": "...", "newPassword": "newSecret123" }
+    @PostMapping("/reset-password")
+    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
+        authService.resetPassword(req.getToken(), req.getNewPassword());
+        return ResponseEntity.ok(new MessageResponse("Password reset successful"));
+    }
+
     // ── Inner request/response classes ───────────────────────────────────────
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor
@@ -52,5 +71,27 @@ public class AuthController {
     @Getter @AllArgsConstructor
     public static class LoginResponse {
         private String token;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class ForgotPasswordRequest {
+        @Email @NotBlank private String email;
+    }
+
+    @Getter @AllArgsConstructor
+    public static class ForgotPasswordResponse {
+        private String message;
+        private String resetToken;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class ResetPasswordRequest {
+        @NotBlank private String token;
+        @NotBlank private String newPassword;
+    }
+
+    @Getter @AllArgsConstructor
+    public static class MessageResponse {
+        private String message;
     }
 }

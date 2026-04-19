@@ -5,8 +5,10 @@ import com.cts.mfrp.skillbarter.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -63,6 +65,14 @@ public class UserController {
             @PathVariable Integer id,
             @RequestParam Integer points) {
         return ResponseEntity.ok(userService.addXp(id, points));
+    }
+
+    // POST /api/users/{id}/photo (multipart/form-data)
+    @PostMapping(value = "/{id}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<User> uploadPhoto(
+            @PathVariable Integer id,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(userService.updateProfilePhoto(id, file));
     }
 
     // DELETE /api/users/{id}

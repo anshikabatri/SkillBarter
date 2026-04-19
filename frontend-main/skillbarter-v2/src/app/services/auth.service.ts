@@ -18,6 +18,7 @@ export interface User {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private api = environment.apiUrl;
+  private backendBase = environment.apiUrl.replace(/\/api\/?$/, '');
   private userSubject = new BehaviorSubject<User | null>(this.loadUser());
   currentUser$ = this.userSubject.asObservable();
 
@@ -25,8 +26,14 @@ export class AuthService {
 
   private normalizeUser(user: any): User {
     const xp = Number(user?.xp ?? user?.xpPoints ?? user?.skillPoints ?? 0);
+    const photoUrl = user?.profilePhotoUrl
+      ? (String(user.profilePhotoUrl).startsWith('http')
+          ? user.profilePhotoUrl
+          : `${this.backendBase}${user.profilePhotoUrl}`)
+      : undefined;
     return {
       ...user,
+      profilePhotoUrl: photoUrl,
       xp,
       xpPoints: xp,
       skillPoints: xp
@@ -74,6 +81,14 @@ export class AuthService {
         if (decodedEmail) localStorage.setItem('userEmail', decodedEmail);
       })
     );
+  }
+
+  forgotPassword(email: string): Observable<{ message: string; resetToken: string }> {
+    return this.http.post<{ message: string; resetToken: string }>(`${this.api}/auth/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.api}/auth/reset-password`, { token, newPassword });
   }
 
   // Legacy compatibility method

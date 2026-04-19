@@ -25,7 +25,10 @@ import { ApiService } from '../../services/api.service';
           <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
         </button>
         <div class="user-btn" (click)="toggleMenu($event)">
-          <div class="avatar-circle">{{ userInitial }}</div>
+          <div class="avatar-circle">
+            <img *ngIf="user?.profilePhotoUrl" [src]="user.profilePhotoUrl" class="avatar-img" alt="Profile">
+            <span *ngIf="!user?.profilePhotoUrl">{{ userInitial }}</span>
+          </div>
           <span class="user-name">{{ user?.name || 'User' }}</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
           <div class="dropdown" *ngIf="showMenu" (click)="$event.stopPropagation()">
@@ -70,7 +73,8 @@ import { ApiService } from '../../services/api.service';
     .badge { position:absolute; top:-4px; right:-4px; background:var(--red); color:white; font-size:10px; font-weight:700; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
     .user-btn { display:flex; align-items:center; gap:8px; cursor:pointer; position:relative; padding:6px 10px; border-radius:10px; transition:background 0.2s; }
     .user-btn:hover { background:var(--bg3); }
-    .avatar-circle { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,var(--blue),#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:white; font-family:'Syne',sans-serif; }
+    .avatar-circle { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,var(--blue),#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:white; font-family:'Syne',sans-serif; overflow:hidden; }
+    .avatar-img { width:100%; height:100%; object-fit:cover; }
     .user-name { font-size:14px; font-weight:600; }
     .dropdown { position:absolute; top:calc(100% + 8px); right:0; background:var(--card2); border:1px solid var(--border); border-radius:12px; min-width:180px; padding:6px; z-index:200; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
     .dd-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:var(--text2); font-size:13px; cursor:pointer; text-decoration:none; background:none; border:none; width:100%; text-align:left; transition:all 0.15s; }

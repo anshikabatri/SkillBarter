@@ -15,6 +15,11 @@ export class ApiService {
   searchUsers(name: string): Observable<any[]> { return this.http.get<any[]>(`${this.base}/users/search?name=${name}`); }
   updateUser(id: number, data: any): Observable<any> { return this.http.put(`${this.base}/users/${id}`, data); }
   addXp(id: number, points: number): Observable<any> { return this.http.patch(`${this.base}/users/${id}/xp?points=${points}`, {}); }
+  uploadProfilePhoto(id: number, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post(`${this.base}/users/${id}/photo`, formData);
+  }
 
   // ── SKILLS ── /api/skills & /api/user-skills
   searchSkills(query: string): Observable<any[]> { return this.http.get<any[]>(`${this.base}/skills/search?query=${query}`); }
@@ -72,4 +77,13 @@ export class ApiService {
 
   // ── TRANSACTIONS ── /api/transactions
   getTransactionsByUser(userId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/transactions/user/${userId}`); }
+
+  // ── AUTH: PASSWORD RESET ── /api/auth
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.base}/auth/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.base}/auth/reset-password`, { token, newPassword });
+  }
 }
