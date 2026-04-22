@@ -1,9 +1,4 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8082/api'
-};
-
-export const productionEnvironment = {
   production: true,
   apiUrl: 'https://your-backend-url.onrender.com/api'
 };

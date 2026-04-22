@@ -1,0 +1,9 @@
+target
+.git
+.idea
+.vscode
+uploads
+*.log
+Dockerfile
+render.yaml
+README.md

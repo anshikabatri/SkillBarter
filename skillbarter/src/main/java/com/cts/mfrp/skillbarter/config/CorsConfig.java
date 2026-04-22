@@ -13,10 +13,19 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        String frontendUrl = System.getenv("FRONTEND_URL");
+        
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:4200")
+            .allowedOriginPatterns(
+                "http://localhost:4200",
+                "http://localhost:3000",
+                "https://localhost:4200",
+                "https://*.vercel.app",
+                frontendUrl != null && !frontendUrl.isBlank() ? frontendUrl : "http://localhost:4200"
+            )
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
+                .exposedHeaders("Authorization", "X-Total-Count")
                 .allowCredentials(true)
                 .maxAge(3600);
     }

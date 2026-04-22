@@ -1,0 +1,5 @@
+// netlify.toml - For Vercel deployment configuration
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/skillbarter"
+}

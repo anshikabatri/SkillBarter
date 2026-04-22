@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: skillbarter-api
+    runtime: docker
+    dockerfilePath: ./skillbarter/Dockerfile
+    plan: free
+    region: oregon
+    branch: deploy
+    autoDeploy: true
+    envVars:
+      - key: DB_DRIVER
+        value: org.postgresql.Driver
+      - key: HIBERNATE_DIALECT
+        value: org.hibernate.dialect.PostgreSQLDialect
+      - key: JPA_DDL_AUTO
+        value: update
+      - key: APP_SEED_DATA
+        value: "false"
+      - key: APP_UPLOAD_DIR
+        value: uploads
+      - key: SERVER_PORT
+        value: "8082"
+      - key: JWT_EXPIRATION_MS
+        value: "86400000"
