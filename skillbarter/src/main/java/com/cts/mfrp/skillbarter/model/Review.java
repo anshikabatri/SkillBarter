@@ -1,5 +1,6 @@
 package com.cts.mfrp.skillbarter.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,6 +21,11 @@ public class Review {
     @ManyToOne
     @JoinColumn(name = "reviewee_id", nullable = false)
     private User reviewee;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "mentor", "learner", "skill"})
+    private Session session;
 
     @Column(precision = 2, scale = 1)
     private BigDecimal rating;
@@ -54,6 +60,9 @@ public class Review {
 
     public User getReviewee() { return reviewee; }
     public void setReviewee(User reviewee) { this.reviewee = reviewee; }
+
+    public Session getSession() { return session; }
+    public void setSession(Session session) { this.session = session; }
 
     public BigDecimal getRating() { return rating; }
     public void setRating(BigDecimal rating) { this.rating = rating; }

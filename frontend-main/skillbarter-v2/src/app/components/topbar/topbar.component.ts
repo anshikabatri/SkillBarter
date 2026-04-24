@@ -24,6 +24,15 @@ import { ApiService } from '../../services/api.service';
           </svg>
           <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
         </button>
+        <button class="icon-btn theme-btn" (click)="toggleTheme($event)" [attr.aria-label]="isLightMode ? 'Switch to dark mode' : 'Switch to light mode'" [title]="isLightMode ? 'Dark mode' : 'Light mode'">
+          <svg *ngIf="!isLightMode" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+          </svg>
+          <svg *ngIf="isLightMode" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3c.5 0 .78.56.52.99A7 7 0 0 0 20.01 13.27c.43-.26.99.02.99.52z"></path>
+          </svg>
+        </button>
         <div class="user-btn" (click)="toggleMenu($event)">
           <div class="avatar-circle">
             <img *ngIf="user?.profilePhotoUrl" [src]="user.profilePhotoUrl" class="avatar-img" alt="Profile">
@@ -70,6 +79,7 @@ import { ApiService } from '../../services/api.service';
     .topbar-right { display:flex; align-items:center; gap:12px; }
     .icon-btn { position:relative; background:var(--bg3); border:1px solid var(--border2); border-radius:8px; color:var(--text2); cursor:pointer; padding:7px 9px; display:flex; align-items:center; transition:all 0.2s; }
     .icon-btn:hover { color:var(--text); border-color:var(--blue); }
+    .theme-btn { width:38px; justify-content:center; }
     .badge { position:absolute; top:-4px; right:-4px; background:var(--red); color:white; font-size:10px; font-weight:700; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
     .user-btn { display:flex; align-items:center; gap:8px; cursor:pointer; position:relative; padding:6px 10px; border-radius:10px; transition:background 0.2s; }
     .user-btn:hover { background:var(--bg3); }
@@ -97,15 +107,26 @@ export class TopbarComponent implements OnInit {
   user: any = null;
   showMenu = false; showNotif = false;
   notifications: any[] = []; unreadCount = 0;
+  isLightMode = false;
   get userInitial() { return this.user?.name ? this.user.name.charAt(0).toUpperCase() : 'U'; }
 
   constructor(private auth: AuthService, private api: ApiService) {}
 
   ngOnInit() {
+    this.isLightMode = (localStorage.getItem('theme') || 'dark') === 'light';
+    document.documentElement.setAttribute('data-theme', this.isLightMode ? 'light' : 'dark');
     this.auth.currentUser$.subscribe(u => { this.user = u; if (u?.userId) this.loadNotifs(u.userId); });
     if (!this.auth.currentUser && this.auth.isLoggedIn) {
       this.auth.resolveAndStoreCurrentUser().subscribe({ next: () => {}, error: () => {} });
     }
+  }
+
+  toggleTheme(e: Event) {
+    e.stopPropagation();
+    this.isLightMode = !this.isLightMode;
+    const theme = this.isLightMode ? 'light' : 'dark';
+    localStorage.setItem('theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
   }
 
   loadNotifs(userId: number) {

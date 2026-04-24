@@ -18,15 +18,25 @@ public class ReviewController {
     private ReviewService reviewService;
 
     // POST /api/reviews
-    // Body: { "reviewerId": 1, "revieweeId": 2, "rating": 4.5, "reviewText": "Great session!" }
+    // Body: { "reviewerId": 1, "revieweeId": 2, "rating": 4.5, "reviewText": "Great session!", "sessionId": 10 }
     @PostMapping
     public ResponseEntity<ApiResponse<Review>> addReview(@RequestBody Map<String, Object> request) {
-        Integer reviewerId = (Integer) request.get("reviewerId");
-        Integer revieweeId = (Integer) request.get("revieweeId");
+        Integer reviewerId = request.get("reviewerId") != null ? ((Number) request.get("reviewerId")).intValue() : null;
+        Integer revieweeId = request.get("revieweeId") != null ? ((Number) request.get("revieweeId")).intValue() : null;
+        Integer sessionId = request.get("sessionId") != null ? ((Number) request.get("sessionId")).intValue() : null;
         BigDecimal rating = new BigDecimal(request.get("rating").toString());
         String reviewText = (String) request.get("reviewText");
-        Review review = reviewService.addReview(reviewerId, revieweeId, rating, reviewText);
+        Review review = reviewService.addReview(reviewerId, revieweeId, rating, reviewText, sessionId);
         return ResponseEntity.ok(ApiResponse.success("Review added successfully", review));
+    }
+
+    // GET /api/reviews/session/{sessionId}/reviewer/{reviewerId}/exists
+    @GetMapping("/session/{sessionId}/reviewer/{reviewerId}/exists")
+    public ResponseEntity<ApiResponse<Boolean>> hasReviewedSession(
+            @PathVariable Integer sessionId,
+            @PathVariable Integer reviewerId) {
+        boolean exists = reviewService.hasReviewerReviewedSession(sessionId, reviewerId);
+        return ResponseEntity.ok(ApiResponse.success(exists));
     }
 
     // GET /api/reviews/reviewee/{revieweeId}

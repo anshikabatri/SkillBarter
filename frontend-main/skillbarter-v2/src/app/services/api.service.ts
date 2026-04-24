@@ -22,6 +22,7 @@ export class ApiService {
   }
 
   // ── SKILLS ── /api/skills & /api/user-skills
+  getAllSkills(): Observable<any[]> { return this.http.get<any[]>(`${this.base}/skills`); }
   searchSkills(query: string): Observable<any[]> { return this.http.get<any[]>(`${this.base}/skills/search?query=${query}`); }
   getSkillsByCategory(id: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/skills/category/${id}`); }
   getUserSkills(userId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/user-skills/${userId}`); }
@@ -62,8 +63,12 @@ export class ApiService {
   getAverageRating(id: number): Observable<number> {
     return this.http.get(`${this.base}/reviews/reviewee/${id}/average`).pipe(map((res: any) => Number(res?.data ?? res ?? 0) || 0));
   }
-  addReview(reviewerId: number, revieweeId: number, rating: number, reviewText: string): Observable<any> {
-    return this.http.post(`${this.base}/reviews`, { reviewerId, revieweeId, rating, reviewText });
+  addReview(reviewerId: number, revieweeId: number, rating: number, reviewText: string, sessionId?: number): Observable<any> {
+    return this.http.post(`${this.base}/reviews`, { reviewerId, revieweeId, rating, reviewText, sessionId });
+  }
+  hasReviewedSession(sessionId: number, reviewerId: number): Observable<boolean> {
+    return this.http.get(`${this.base}/reviews/session/${sessionId}/reviewer/${reviewerId}/exists`)
+      .pipe(map((res: any) => !!(res?.data ?? res ?? false)));
   }
 
   // ── STORIES ── /api/stories

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,7 +39,7 @@ public class MatchService {
 
         List<Match> existing = matchRepo.findMatchBetweenUsers(user1.getUserId(), user2.getUserId());
         if (!existing.isEmpty()) {
-            return existing.get(0);
+            return refreshScore(existing.get(0));
         }
 
         BigDecimal score = calculateMatchScore(user1.getUserId(), user2.getUserId());
@@ -53,22 +54,35 @@ public class MatchService {
         return findOrThrow(id);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<Match> getAllMatchesByUser(Integer userId) {
-        return matchRepo.findAllMatchesByUser(userId);
+        List<Match> matches = matchRepo.findAllMatchesByUser(userId);
+        for (Match match : matches) {
+            refreshScore(match);
+        }
+        return matches;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<Match> getMatchBetweenUsers(Integer u1, Integer u2) {
-        return matchRepo.findMatchBetweenUsers(u1, u2);
+        List<Match> matches = matchRepo.findMatchBetweenUsers(u1, u2);
+        for (Match match : matches) {
+            refreshScore(match);
+        }
+        return matches;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<Match> getAllOrderedByScore() {
-        return matchRepo.findAllOrderByScoreDesc();
+        List<Match> matches = matchRepo.findAllOrderByScoreDesc();
+        for (Match match : matches) {
+            refreshScore(match);
+        }
+        matches.sort(Comparator.comparing(Match::getMatchScore,
+                Comparator.nullsLast(Comparator.reverseOrder())));
+        return matches;
     }
 
-    @Transactional(readOnly = true)
     public List<MatchSuggestionDto> getSuggestions(Integer userId) {
         User me = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found: " + userId));
@@ -81,9 +95,13 @@ public class MatchService {
 
             List<Match> existing = matchRepo.findMatchBetweenUsers(me.getUserId(), other.getUserId());
             boolean alreadyMatched = !existing.isEmpty();
-            BigDecimal score = alreadyMatched
-                    ? existing.get(0).getMatchScore()
-                    : calculateMatchScore(me.getUserId(), other.getUserId());
+            BigDecimal score;
+            if (alreadyMatched) {
+                Match existingMatch = refreshScore(existing.get(0));
+                score = existingMatch.getMatchScore();
+            } else {
+                score = calculateMatchScore(me.getUserId(), other.getUserId());
+            }
 
             out.add(new MatchSuggestionDto(other, score != null ? score : BigDecimal.ZERO, alreadyMatched));
         }
@@ -157,6 +175,18 @@ public class MatchService {
         Match match = findOrThrow(id);
         match.setMatchScore(score);
         return matchRepo.save(match);
+    }
+
+    private Match refreshScore(Match match) {
+        if (match == null || match.getUser1() == null || match.getUser2() == null) {
+            return match;
+        }
+        BigDecimal recalculated = calculateMatchScore(match.getUser1().getUserId(), match.getUser2().getUserId());
+        if (match.getMatchScore() == null || match.getMatchScore().compareTo(recalculated) != 0) {
+            match.setMatchScore(recalculated);
+            return matchRepo.save(match);
+        }
+        return match;
     }
 
     public void deleteMatch(Integer id) {

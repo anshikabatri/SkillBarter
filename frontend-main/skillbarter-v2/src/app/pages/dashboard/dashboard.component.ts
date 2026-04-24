@@ -43,7 +43,7 @@ import { AuthService } from '../../services/auth.service';
             <div class="mc" *ngFor="let m of matches.slice(0,3)">
               <div class="mav" [style.background]="gc(m.user2?.name||m.user1?.name)">{{ (m.user2?.name||m.user1?.name||'?').charAt(0) }}</div>
               <div class="mn">{{ m.user2?.name || m.user1?.name }}</div>
-              <div class="ms">{{ m.matchScore ? (m.matchScore|number:'1.0-0') : '—' }}%</div>
+              <div class="ms">{{ formatMatchScore(m) }}</div>
               <a routerLink="/app/matches" class="btn-sm">View</a>
             </div>
           </div>
@@ -146,7 +146,28 @@ export class DashboardComponent implements OnInit {
 
   loadMatches(id: number) {
     this.loadingMatches = true;
-    this.api.getMatchesByUser(id).subscribe({ next: d => { this.matches = d||[]; this.loadingMatches = false; }, error: () => this.loadingMatches = false });
+    this.api.getMatchesByUser(id).subscribe({
+      next: d => {
+        this.matches = (d || []).map((m: any) => ({
+          ...m,
+          _scoreValue: this.toScoreNumber(m?.matchScore ?? m?.score)
+        }));
+        this.loadingMatches = false;
+      },
+      error: () => this.loadingMatches = false
+    });
+  }
+
+  private toScoreNumber(value: any): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  formatMatchScore(match: any): string {
+    const raw = match?._scoreValue ?? this.toScoreNumber(match?.matchScore ?? match?.score);
+    if (raw === null) return 'N/A';
+    return `${Math.round(raw)}%`;
   }
 
   loadSessions(id: number) {

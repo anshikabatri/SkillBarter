@@ -55,6 +55,7 @@ template: `
         <div class="si-time">{{ s.scheduledAt | date:'MMM d, y · h:mm a' }}</div>
         <div class="si-with">with {{ withUser(s) }}</div>
       </div>
+      <button class="rate-btn" *ngIf="canRate(s)" (click)="rateSession(s)">Rate</button>
       <button class="ack-btn" *ngIf="tab==='upcoming' && ((s.status||'').toLowerCase()==='scheduled')"
               [disabled]="completingSessionId===s.sessionId"
               (click)="markComplete(s)">
@@ -66,7 +67,7 @@ template: `
     <div class="empty" *ngIf="statusError">{{ statusError }}</div>
   </div>
 </div>`,
-styles: [`.cal-page{display:flex;gap:20px;align-items:flex-start}.card{background:var(--card);border-radius:16px;border:1px solid var(--border);padding:22px}.cal-card{flex:1}.calh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.ct{font-size:16px;font-weight:700;font-family:'Syne',sans-serif}.cn{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer}.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:20px}.dn{text-align:center;font-size:11px;color:var(--text3);padding:6px 0;font-weight:600}.cd{text-align:center;padding:9px 2px;border-radius:8px;font-size:14px;cursor:pointer;transition:background 0.15s}.cd:hover:not(.other){background:var(--bg3)}.cd.today{background:var(--blue);color:white;border-radius:50%;font-weight:700}.cd.other{color:var(--text3)}.new-btn{display:block;text-align:center;width:100%;padding:13px;border-radius:10px;text-decoration:none}.req-box{margin-top:14px;border:1px solid var(--border2);border-radius:12px;padding:14px;background:var(--bg3)}.req-box h4{font-size:14px;font-weight:700;margin-bottom:10px}.req-grid{display:grid;grid-template-columns:1fr;gap:10px}.req-actions{display:flex;gap:8px;margin-top:10px}.btn-secondary{padding:10px 14px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer}.success{color:var(--green);font-size:13px;padding-top:8px}.sess-card{width:300px}.stabs{display:flex;gap:6px;margin-bottom:18px}.stabs button{padding:7px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer}.stabs button.active{background:var(--blue);color:white;border-color:var(--blue)}.loading,.empty{color:var(--text2);font-size:13px;padding:12px 0}.sitem{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--border2)}.si-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}.si-dot.scheduled,.si-dot.SCHEDULED{background:var(--blue)}.si-dot.completed,.si-dot.COMPLETED{background:var(--green)}.si-dot.cancelled,.si-dot.CANCELLED{background:var(--red)}.si-info{flex:1}.si-name{font-size:14px;font-weight:600;margin-bottom:3px}.si-time,.si-with{font-size:12px;color:var(--text2)}.ack-btn{border:1px solid var(--green);background:rgba(16,185,129,0.15);color:var(--green);font-size:11px;font-weight:700;padding:5px 8px;border-radius:8px;cursor:pointer;align-self:center;white-space:nowrap}.ack-btn:disabled{opacity:0.6;cursor:not-allowed}.sbadge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}.sbadge.scheduled,.sbadge.SCHEDULED{background:rgba(59,130,246,0.15);color:var(--blue)}.sbadge.completed,.sbadge.COMPLETED{background:rgba(16,185,129,0.15);color:var(--green)}.sbadge.cancelled,.sbadge.CANCELLED{background:rgba(239,68,68,0.15);color:var(--red)}`]
+styles: [`.cal-page{display:flex;gap:20px;align-items:flex-start}.card{background:var(--card);border-radius:16px;border:1px solid var(--border);padding:22px}.cal-card{flex:1}.calh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.ct{font-size:16px;font-weight:700;font-family:'Syne',sans-serif}.cn{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer}.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:20px}.dn{text-align:center;font-size:11px;color:var(--text3);padding:6px 0;font-weight:600}.cd{text-align:center;padding:9px 2px;border-radius:8px;font-size:14px;cursor:pointer;transition:background 0.15s}.cd:hover:not(.other){background:var(--bg3)}.cd.today{background:var(--blue);color:white;border-radius:50%;font-weight:700}.cd.other{color:var(--text3)}.new-btn{display:block;text-align:center;width:100%;padding:13px;border-radius:10px;text-decoration:none}.req-box{margin-top:14px;border:1px solid var(--border2);border-radius:12px;padding:14px;background:var(--bg3)}.req-box h4{font-size:14px;font-weight:700;margin-bottom:10px}.req-grid{display:grid;grid-template-columns:1fr;gap:10px}.req-grid input[type="datetime-local"]{background:#fff;color:#0f172a;border:1px solid #d0d7e2;color-scheme:light}.req-grid input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:none;opacity:1;cursor:pointer}.req-actions{display:flex;gap:8px;margin-top:10px}.btn-secondary{padding:10px 14px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer}.success{color:var(--green);font-size:13px;padding-top:8px}.sess-card{width:300px}.stabs{display:flex;gap:6px;margin-bottom:18px}.stabs button{padding:7px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer}.stabs button.active{background:var(--blue);color:white;border-color:var(--blue)}.loading,.empty{color:var(--text2);font-size:13px;padding:12px 0}.sitem{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--border2)}.si-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}.si-dot.scheduled,.si-dot.SCHEDULED{background:var(--blue)}.si-dot.completed,.si-dot.COMPLETED{background:var(--green)}.si-dot.cancelled,.si-dot.CANCELLED{background:var(--red)}.si-info{flex:1}.si-name{font-size:14px;font-weight:600;margin-bottom:3px}.si-time,.si-with{font-size:12px;color:var(--text2)}.rate-btn{border:1px solid var(--blue);background:rgba(59,130,246,0.15);color:var(--blue);font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;cursor:pointer;align-self:center;white-space:nowrap}.ack-btn{border:1px solid var(--green);background:rgba(16,185,129,0.15);color:var(--green);font-size:11px;font-weight:700;padding:5px 8px;border-radius:8px;cursor:pointer;align-self:center;white-space:nowrap}.ack-btn:disabled{opacity:0.6;cursor:not-allowed}.sbadge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}.sbadge.scheduled,.sbadge.SCHEDULED{background:rgba(59,130,246,0.15);color:var(--blue)}.sbadge.completed,.sbadge.COMPLETED{background:rgba(16,185,129,0.15);color:var(--green)}.sbadge.cancelled,.sbadge.CANCELLED{background:rgba(239,68,68,0.15);color:var(--red)}`]
 })
 export class CalendarComponent implements OnInit {
   dns=['Su','Mo','Tu','We','Th','Fr','Sa']; ms=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -84,6 +85,7 @@ export class CalendarComponent implements OnInit {
   completingSessionId: number | null = null;
   statusSuccess = '';
   statusError = '';
+  reviewedSessionIds = new Set<number>();
   get filtered(){return this.sessions.filter(s=>this.tab==='upcoming'?(s.status||'').toLowerCase()==='scheduled':['completed','cancelled'].includes((s.status||'').toLowerCase()));}
   constructor(private auth:AuthService,private api:ApiService){}
   ngOnInit(){
@@ -118,6 +120,7 @@ export class CalendarComponent implements OnInit {
         this.sessions = deduped.sort((a:any, b:any) =>
           new Date(a?.scheduledAt || 0).getTime() - new Date(b?.scheduledAt || 0).getTime()
         );
+        this.loadReviewStates();
         this.loading = false;
       },
       error: () => this.loading=false
@@ -127,6 +130,67 @@ export class CalendarComponent implements OnInit {
     if (!s) return 'Unknown';
     if (!this.userId) return s?.mentor?.name || s?.learner?.name || 'Unknown';
     return s?.mentor?.userId===this.userId ? (s?.learner?.name || 'Learner') : (s?.mentor?.name || 'Mentor');
+  }
+
+  private isRequester(s: any): boolean {
+    return Number(s?.learner?.userId) === Number(this.userId);
+  }
+
+  canRate(s: any): boolean {
+    return this.tab === 'history'
+      && (s?.status || '').toLowerCase() === 'completed'
+      && this.isRequester(s)
+      && !this.reviewedSessionIds.has(Number(s?.sessionId));
+  }
+
+  private loadReviewStates() {
+    if (!this.userId) return;
+    const candidates = this.sessions.filter((s: any) => (s?.status || '').toLowerCase() === 'completed' && this.isRequester(s));
+    if (!candidates.length) {
+      this.reviewedSessionIds = new Set<number>();
+      return;
+    }
+    forkJoin(
+      candidates.map((s: any) => this.api.hasReviewedSession(Number(s.sessionId), Number(this.userId)))
+    ).subscribe({
+      next: (flags: boolean[]) => {
+        const set = new Set<number>();
+        candidates.forEach((s: any, idx: number) => {
+          if (flags[idx]) set.add(Number(s.sessionId));
+        });
+        this.reviewedSessionIds = set;
+      },
+      error: () => {}
+    });
+  }
+
+  rateSession(session: any) {
+    if (!this.userId) return;
+    const sessionId = Number(session?.sessionId);
+    const revieweeId = Number(session?.mentor?.userId);
+    if (!sessionId || !revieweeId) return;
+
+    const ratingInput = prompt('Rate this session (1.0 to 5.0):', '5');
+    if (ratingInput === null) return;
+    const rating = Number(ratingInput);
+    if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
+      this.statusError = 'Please enter a rating between 1 and 5.';
+      return;
+    }
+
+    const reviewText = prompt('Write a short review (optional):', '') || '';
+
+    this.statusError = '';
+    this.statusSuccess = '';
+    this.api.addReview(this.userId, revieweeId, rating, reviewText, sessionId).subscribe({
+      next: () => {
+        this.reviewedSessionIds.add(sessionId);
+        this.statusSuccess = 'Thanks! Your review was submitted.';
+      },
+      error: (e: any) => {
+        this.statusError = e?.error?.message || 'Unable to submit review.';
+      }
+    });
   }
   toggleRequestForm(){
     this.showRequest = !this.showRequest;

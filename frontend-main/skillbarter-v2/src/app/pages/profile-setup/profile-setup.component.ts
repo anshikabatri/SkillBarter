@@ -15,29 +15,9 @@ import { ApiService } from '../../services/api.service';
       <div class="setup-card">
         <div class="brand">SkillBarter</div>
         <h1>Set Up Your Profile</h1>
-        <p class="sub">Help us find the best skill matches for you</p>
+        <p class="sub">Just add your basic profile details</p>
         <div class="form-group"><label>Your Name</label><input type="text" [(ngModel)]="form.name" class="input" placeholder="Full name"></div>
         <div class="form-group"><label>About You</label><textarea [(ngModel)]="form.bio" class="input ta" placeholder="Tell others what you're about..."></textarea></div>
-        <div class="form-group">
-          <label>Skills you want to teach (press Enter to add)</label>
-          <div class="tag-wrap">
-            <div class="tags"><span class="tag" *ngFor="let s of teachSkills">{{ s }}<button (click)="removeT(s)">×</button></span></div>
-            <input class="input ti" [(ngModel)]="ti" placeholder="e.g. Python, Guitar..." (keyup.enter)="addT()">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Skills you want to learn (press Enter to add)</label>
-          <div class="tag-wrap">
-            <div class="tags"><span class="tag" *ngFor="let s of learnSkills">{{ s }}<button (click)="removeL(s)">×</button></span></div>
-            <input class="input ti" [(ngModel)]="li" placeholder="e.g. Web Dev, Spanish..." (keyup.enter)="addL()">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Languages (hold Ctrl to select multiple)</label>
-          <select [(ngModel)]="form.languages" class="input" multiple size="4">
-            <option *ngFor="let l of langs" [value]="l">{{ l }}</option>
-          </select>
-        </div>
         <div class="error-box" *ngIf="error">{{ error }}</div>
         <button class="btn-primary w100" (click)="save()" [disabled]="loading">{{ loading ? 'Saving...' : 'Continue to Dashboard →' }}</button>
       </div>
@@ -53,35 +33,31 @@ import { ApiService } from '../../services/api.service';
     .form-group { margin-bottom:16px; }
     label { display:block; font-size:13px; color:var(--text2); margin-bottom:6px; font-weight:500; }
     .ta { min-height:72px; resize:vertical; }
-    .tag-wrap { background:var(--bg3); border:1px solid var(--border2); border-radius:10px; padding:8px; }
-    .tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
-    .tag { background:var(--blue-glow); border:1px solid var(--border); border-radius:20px; padding:3px 10px; font-size:12px; display:flex; align-items:center; gap:4px; }
-    .tag button { background:none; border:none; color:var(--text2); cursor:pointer; font-size:14px; }
-    .ti { border:none; background:transparent; padding:4px 8px; color:var(--text); font-size:13px; width:100%; }
-    .ti:focus { outline:none; }
-    select.input { cursor:pointer; }
-    select.input option { background:var(--bg3); }
     .w100 { width:100%; padding:13px; font-size:15px; margin-top:8px; }
     .error-box { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:10px 14px; color:#f87171; font-size:13px; margin-bottom:12px; }
   `]
 })
 export class ProfileSetupComponent implements OnInit {
-  form: any = { name: '', bio: '', languages: [] };
-  teachSkills: string[] = []; learnSkills: string[] = [];
-  ti = ''; li = ''; loading = false; error = '';
-  langs = ['English','Hindi','Tamil','Telugu','Kannada','Spanish','French','German','Arabic','Chinese','Japanese'];
+  form: any = { name: '', bio: '' };
+  loading = false; error = '';
   user: any;
   constructor(private auth: AuthService, private api: ApiService, private router: Router) {}
-  ngOnInit() { this.user = this.auth.currentUser; if (this.user) this.form.name = this.user.name || ''; }
-  addT() { if (this.ti.trim()) { this.teachSkills.push(this.ti.trim()); this.ti = ''; } }
-  addL() { if (this.li.trim()) { this.learnSkills.push(this.li.trim()); this.li = ''; } }
-  removeT(s: string) { this.teachSkills = this.teachSkills.filter(x => x !== s); }
-  removeL(s: string) { this.learnSkills = this.learnSkills.filter(x => x !== s); }
+  ngOnInit() {
+    this.user = this.auth.currentUser;
+    if (this.user) {
+      this.form.name = this.user.name || '';
+      this.form.bio = this.user.bio || '';
+    }
+  }
   save() {
     if (!this.form.name) { this.error = 'Please enter your name.'; return; }
     if (!this.user?.userId) { this.error = 'Please sign in again.'; return; }
     this.loading = true;
-    this.api.updateUser(this.user?.userId, { name: this.form.name, bio: this.form.bio, email: this.user?.email }).subscribe({
+    this.api.updateUser(this.user?.userId, {
+      name: this.form.name,
+      bio: this.form.bio,
+      email: this.user?.email
+    }).subscribe({
       next: (u) => { this.loading = false; this.auth.setUser(u); this.router.navigate(['/app/dashboard']); },
       error: () => { this.loading = false; this.router.navigate(['/app/dashboard']); }
     });

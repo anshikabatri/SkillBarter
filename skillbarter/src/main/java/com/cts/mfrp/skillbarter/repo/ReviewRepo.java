@@ -13,6 +13,10 @@ public interface ReviewRepo extends JpaRepository<Review, Integer> {
 
     List<Review> findByReviewer_UserId(Integer reviewerId);
 
+    List<Review> findBySession_SessionId(Integer sessionId);
+
+    boolean existsBySession_SessionIdAndReviewer_UserId(Integer sessionId, Integer reviewerId);
+
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.reviewee.userId = :revieweeId")
     Double findAverageRatingByRevieweeId(Integer revieweeId);
 }

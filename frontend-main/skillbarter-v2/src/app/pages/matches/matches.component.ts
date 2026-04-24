@@ -30,7 +30,7 @@ import { Observable, of } from 'rxjs';
             <h3>{{ u.user?.name || u.name }}</h3>
             <p class="uemail">{{ u.user?.email || u.email }}</p>
             <p class="ubio" *ngIf="u.user?.bio || u.bio">{{ u.user?.bio || u.bio }}</p>
-            <div class="mscore" *ngIf="u.score !== undefined">{{ u.score | number:'1.0-0' }}% match</div>
+            <div class="mscore">{{ displayScore(u.score ?? u.matchScore) }}</div>
             <button class="btn-primary btn-sm" [disabled]="u.alreadyMatched" (click)="createMatch(u)">{{ u.alreadyMatched ? 'Connected' : 'Connect' }}</button>
           </div>
         </div>
@@ -47,7 +47,7 @@ import { Observable, of } from 'rxjs';
           <div class="mcard" *ngFor="let m of myMatches">
             <div class="mav" [style.background]="gc(otherUser(m)?.name)">{{ (otherUser(m)?.name||'?').charAt(0) }}</div>
             <h3>{{ otherUser(m)?.name }}</h3>
-            <div class="mscore" *ngIf="m.matchScore">{{ m.matchScore | number:'1.0-0' }}% match</div>
+            <div class="mscore">{{ displayScore(m.matchScore) }}</div>
             <div class="mdate">Connected {{ m.createdAt | date:'MMM d, y' }}</div>
             <a routerLink="/app/chat" class="btn-primary btn-sm">Message</a>
           </div>
@@ -81,6 +81,18 @@ export class MatchesComponent implements OnInit {
   colors = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4'];
   gc(n: string) { return this.colors[(n?.charCodeAt(0)||0) % this.colors.length]; }
 
+  private normalizeScore(v: any): number | null {
+    if (v === null || v === undefined || v === '') return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  displayScore(v: any): string {
+    const n = this.normalizeScore(v);
+    if (n === null) return 'N/A match';
+    return `${Math.round(n)}% match`;
+  }
+
   constructor(private auth: AuthService, private api: ApiService) {}
   ngOnInit() { this.loadAllUsers(); this.loadMyMatches(); }
 
@@ -101,7 +113,9 @@ export class MatchesComponent implements OnInit {
         this.loading = true;
         this.api.getMatchSuggestions(me.userId).subscribe({
           next: d => {
-            this.searchResults = (d||[]).filter((u: any) => u?.user?.userId !== me.userId);
+            this.searchResults = (d||[])
+              .filter((u: any) => u?.user?.userId !== me.userId)
+              .map((u: any) => ({ ...u, score: this.normalizeScore(u?.score) ?? 0 }));
             this.loading = false;
             this.searched = true;
           },
@@ -120,15 +134,23 @@ export class MatchesComponent implements OnInit {
   searchUsers() {
     if (!this.searchQuery.trim()) { this.loadAllUsers(); return; }
     this.loading = true; this.searched = true;
-    const me = this.auth.currentUser;
-    this.api.searchUsers(this.searchQuery).subscribe({
-      next: d => {
-        this.searchResults = (d||[])
-          .filter((u: any) => u.userId !== me?.userId)
-          .map((u: any) => ({ user: u, score: 0, alreadyMatched: false }));
-        this.loading = false;
+    this.ensureUser().subscribe({
+      next: (me) => {
+        this.api.getMatchSuggestions(me?.userId).subscribe({
+          next: d => {
+            this.searchResults = (d||[])
+              .filter((u: any) => u?.user?.userId !== me?.userId)
+              .filter((u: any) => ((u?.user?.name || '').toLowerCase().includes(this.searchQuery.toLowerCase())))
+              .map((u: any) => ({ ...u, score: this.normalizeScore(u?.score) ?? 0 }));
+            this.loading = false;
+          },
+          error: () => this.loading = false
+        });
       },
-      error: () => this.loading = false
+      error: () => {
+        this.loading = false;
+        this.message = 'Please login again to search matches.';
+      }
     });
   }
 
@@ -138,7 +160,7 @@ export class MatchesComponent implements OnInit {
         this.loading = true;
         this.api.getMatchesByUser(u.userId).subscribe({
           next: d => {
-            this.myMatches = d||[];
+            this.myMatches = (d||[]).map((m: any) => ({ ...m, matchScore: this.normalizeScore(m?.matchScore) }));
             this.loading = false;
           },
           error: () => {

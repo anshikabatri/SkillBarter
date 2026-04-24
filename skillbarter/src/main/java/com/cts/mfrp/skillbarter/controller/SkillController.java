@@ -26,6 +26,12 @@ public class SkillController {
         return ResponseEntity.ok(skillService.searchSkills(query));
     }
 
+    // Get all skills (for signup/profile selection lists)
+    @GetMapping("/skills")
+    public ResponseEntity<List<Skill>> getAllSkills() {
+        return ResponseEntity.ok(skillService.getAllSkills());
+    }
+
     // US_10: Filter by Category
     @GetMapping("/skills/category/{id}")
     public ResponseEntity<List<Skill>> filterByCategory(@PathVariable Integer id) {
