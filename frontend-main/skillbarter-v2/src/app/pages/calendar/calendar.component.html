@@ -1,0 +1,60 @@
+<div class="cal-page">
+  <div class="card cal-card">
+    <div class="calh"><button class="cn" (click)="prev()">‹</button><span class="ct">{{ ms[cm] }} {{ cy }}</span><button class="cn" (click)="next()">›</button></div>
+    <div class="cg">
+      <div class="dn" *ngFor="let d of dns">{{ d }}</div>
+      <div *ngFor="let d of days" class="cd" [class.today]="isTd(d)" [class.other]="!d.c">{{ d.d||'' }}</div>
+    </div>
+    <button class="btn-primary new-btn" (click)="toggleRequestForm()">+ New Session Request</button>
+
+    <div class="req-box" *ngIf="showRequest">
+      <h4>Create Session Request</h4>
+      <div class="req-grid">
+        <select class="input" [(ngModel)]="request.mentorId" (change)="onMentorChange()">
+          <option [ngValue]="null">Select match</option>
+          <option *ngFor="let m of requestMatches" [ngValue]="m.userId">{{ m.name }}</option>
+        </select>
+
+        <select class="input" [(ngModel)]="request.skillId" [disabled]="!request.mentorId">
+          <option [ngValue]="null">Select skill</option>
+          <option *ngFor="let s of mentorSkills" [ngValue]="s.skillId">{{ s.name }}{{ s.kind ? ' (' + s.kind + ')' : '' }}</option>
+        </select>
+
+        <input class="input" type="datetime-local" [(ngModel)]="request.scheduledAt" [min]="minScheduledAt">
+      </div>
+
+      <div class="req-actions">
+        <button class="btn-primary" (click)="submitRequest()" [disabled]="submitting">{{ submitting ? 'Creating...' : 'Create Request' }}</button>
+        <button class="btn-secondary" (click)="showRequest=false">Cancel</button>
+      </div>
+      <div class="loading" *ngIf="loadingRequestData">Loading matches/skills...</div>
+      <div class="empty" *ngIf="requestError">{{ requestError }}</div>
+      <div class="success" *ngIf="requestSuccess">{{ requestSuccess }}</div>
+    </div>
+  </div>
+  <div class="card sess-card">
+    <div class="stabs">
+      <button [class.active]="tab==='upcoming'" (click)="tab='upcoming'">Upcoming</button>
+      <button [class.active]="tab==='history'" (click)="tab='history'">History</button>
+    </div>
+    <div class="loading" *ngIf="loading">Loading...</div>
+    <div class="empty" *ngIf="!loading&&filtered.length===0">No {{ tab }} sessions.</div>
+    <div class="sitem" *ngFor="let s of filtered">
+      <div class="si-dot" [class]="(s.status||'').toLowerCase()"></div>
+      <div class="si-info">
+        <div class="si-name">{{ s.skill?.name || 'Session' }}</div>
+        <div class="si-time">{{ s.scheduledAt | date:'MMM d, y · h:mm a' }}</div>
+        <div class="si-with">with {{ withUser(s) }}</div>
+      </div>
+      <button class="rate-btn" *ngIf="canRate(s)" (click)="rateSession(s)">Rate</button>
+      <button class="ack-btn" *ngIf="tab==='upcoming' && ((s.status||'').toLowerCase()==='scheduled')"
+              [disabled]="completingSessionId===s.sessionId"
+              (click)="markComplete(s)">
+        {{ completingSessionId===s.sessionId ? 'Saving...' : 'Mark as Complete' }}
+      </button>
+      <span class="sbadge" [class]="(s.status||'').toLowerCase()">{{ s.status }}</span>
+    </div>
+    <div class="success" *ngIf="statusSuccess">{{ statusSuccess }}</div>
+    <div class="empty" *ngIf="statusError">{{ statusError }}</div>
+  </div>
+</div>

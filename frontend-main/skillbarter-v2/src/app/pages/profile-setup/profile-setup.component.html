@@ -1,0 +1,12 @@
+<div class="setup-page">
+  <div class="glow"></div>
+  <div class="setup-card">
+    <div class="brand">SkillBarter</div>
+    <h1>Set Up Your Profile</h1>
+    <p class="sub">Just add your basic profile details</p>
+    <div class="form-group"><label>Your Name</label><input type="text" [(ngModel)]="form.name" class="input" placeholder="Full name"></div>
+    <div class="form-group"><label>About You</label><textarea [(ngModel)]="form.bio" class="input ta" placeholder="Tell others what you're about..."></textarea></div>
+    <div class="error-box" *ngIf="error">{{ error }}</div>
+    <button class="btn-primary w100" (click)="save()" [disabled]="loading">{{ loading ? 'Saving...' : 'Continue to Dashboard →' }}</button>
+  </div>
+</div>

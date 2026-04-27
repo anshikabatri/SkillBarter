@@ -1,0 +1,19 @@
+<div class="saved-page">
+  <h1>Saved Profiles</h1>
+  <p class="sub">People you matched with</p>
+  <div class="loading" *ngIf="loading">Loading...</div>
+  <div class="empty" *ngIf="!loading&&matches.length===0">No matches yet. <a routerLink="/app/matches">Find people to connect with!</a></div>
+  <div class="grid" *ngIf="matches.length>0">
+    <div class="mcard card" *ngFor="let m of matches">
+      <div class="mhead">
+        <div class="mav" [style.background]="gc(getOther(m)?.name)">{{ getOther(m)?.name?.charAt(0) }}</div>
+        <div><h3>{{ getOther(m)?.name }}</h3><div class="mscore" *ngIf="m.matchScore">{{ m.matchScore | number:'1.0-0' }}% match</div></div>
+      </div>
+      <p class="mbio" *ngIf="getOther(m)?.bio">{{ getOther(m)?.bio }}</p>
+      <div class="mactions">
+        <a routerLink="/app/chat" class="btn-primary btn-sm">Message</a>
+        <a routerLink="/app/matches" class="btn-ghost btn-sm">View Profile</a>
+      </div>
+    </div>
+  </div>
+</div>

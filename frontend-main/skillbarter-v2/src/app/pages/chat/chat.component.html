@@ -1,0 +1,50 @@
+<div class="chat-page">
+  <div class="contacts">
+    <h2 class="contacts-title">
+      Messages
+      <span class="title-dot" *ngIf="hasUnreadSessions"></span>
+    </h2>
+    <input type="text" [(ngModel)]="search" class="input si" placeholder="Search...">
+    <div class="loading" *ngIf="loadingSessions">Loading conversations...</div>
+    <div class="empty-c" *ngIf="!loadingSessions && sessions.length===0">No sessions yet. Match with someone first!</div>
+
+    <div class="contact" *ngFor="let s of filtered" [class.active]="selected?.sessionId===s.sessionId" [class.unread]="isUnread(s)" (click)="selectSession(s)">
+      <div class="cav-wrap">
+        <div class="cav" [style.background]="gc(getOther(s))">{{ getOther(s).charAt(0) }}</div>
+        <span class="notify-dot" *ngIf="isUnread(s)"></span>
+      </div>
+      <div class="cinfo">
+        <div class="cname" [class.unread-text]="isUnread(s)">{{ getOther(s) }}</div>
+        <div class="clast" [class.unread-text]="isUnread(s)">{{ s.lastMessagePreview || s.skill?.name || 'Session' }}</div>
+      </div>
+      <div class="ctime-wrap">
+        <div class="ctime">{{ s.scheduledAt | date:'MMM d' }}</div>
+        <div class="ctime-symbol" *ngIf="isUnread(s)">●</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-win" *ngIf="selected">
+    <div class="chat-header">
+      <div class="chav" [style.background]="gc(getOther(selected))">{{ getOther(selected).charAt(0) }}</div>
+      <div><h3>{{ getOther(selected) }}</h3><span class="skill-tag">{{ selected.skill?.name }}</span></div>
+    </div>
+    <div class="messages" #messagesContainer>
+      <div class="loading" *ngIf="loadingMsgs">Loading messages...</div>
+      <div class="empty-m" *ngIf="!loadingMsgs && messages.length===0">No messages yet. Say hello!</div>
+      <div *ngFor="let m of messages" class="msg" [class.mine]="m.sender?.userId===me?.userId" [class.theirs]="m.sender?.userId!==me?.userId">
+        <div class="bubble">{{ m.content }}</div>
+        <div class="mtime">{{ m.sentAt | date:'h:mm a' }}</div>
+      </div>
+    </div>
+    <div class="input-row">
+      <input type="text" [(ngModel)]="newMsg" class="input mi" placeholder="Write a message..." (keyup.enter)="send()">
+      <button class="btn-primary" (click)="send()">Send</button>
+    </div>
+  </div>
+
+  <div class="no-chat" *ngIf="!selected">
+    <div class="nc-icon">💬</div>
+    <p>Select a conversation to start chatting</p>
+  </div>
+</div>

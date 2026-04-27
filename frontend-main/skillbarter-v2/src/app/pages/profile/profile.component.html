@@ -1,0 +1,65 @@
+<div class="profile-page">
+  <div class="card profile-card">
+    <div class="pav-section">
+      <div class="pav" [style.background]="gc(form.name)">
+        <img *ngIf="photoPreview || user?.profilePhotoUrl" [src]="photoPreview || user?.profilePhotoUrl" class="pimg" alt="Profile photo">
+        <span *ngIf="!photoPreview && !user?.profilePhotoUrl">{{ form.name.charAt(0)||'U' }}</span>
+      </div>
+      <div class="pav-name">{{ form.name }}</div>
+      <div class="pav-email">{{ user?.email }}</div>
+
+      <button class="btn-ghost" *ngIf="user?.profilePhotoUrl && !showPhotoPicker" (click)="showPhotoPicker = true">
+        Change Photo
+      </button>
+
+      <div *ngIf="showPhotoPicker">
+        <input type="file" accept="image/*" class="file-input" (change)="onPhotoSelected($event)">
+        <div class="file-name" *ngIf="selectedPhoto">Selected: {{ selectedPhoto.name }}</div>
+        <button class="btn-primary" (click)="uploadPhoto()" [disabled]="!selectedPhoto || uploadingPhoto">
+          {{ uploadingPhoto ? 'Uploading...' : (user?.profilePhotoUrl ? 'Update Photo' : 'Upload Photo') }}
+        </button>
+      </div>
+
+      <div class="photo-info" *ngIf="photoSavedMessage">
+        {{ photoSavedMessage }}
+        <div *ngIf="photoUpdatedAt">Updated at: {{ photoUpdatedAt }}</div>
+      </div>
+    </div>
+    <div class="pform">
+      <div class="fg"><label>Your Name</label><input [(ngModel)]="form.name" class="input" placeholder="Full name"></div>
+      <div class="fg"><label>Profile Description</label><textarea [(ngModel)]="form.bio" class="input ta" placeholder="Tell others about yourself..."></textarea></div>
+
+      <div class="skills-wrap">
+        <div class="skills-col">
+          <label>Skills I Have (Teach)</label>
+          <div class="tags">
+            <span class="tag" *ngFor="let s of teachSkills">{{ s.skill?.name || s.name }}</span>
+            <span class="empty-sm" *ngIf="teachSkills.length===0">No skills added yet.</span>
+          </div>
+          <div class="add-row">
+            <input [(ngModel)]="newTeachSkill" class="input" placeholder="Type skill name (e.g. Angular)">
+            <button class="btn-primary" (click)="addSkill(true)" [disabled]="addingSkill">Add</button>
+          </div>
+        </div>
+
+        <div class="skills-col">
+          <label>Skills I Need to Learn</label>
+          <div class="tags">
+            <span class="tag learn" *ngFor="let s of learnSkills">{{ s.skill?.name || s.name }}</span>
+            <span class="empty-sm" *ngIf="learnSkills.length===0">No skills added yet.</span>
+          </div>
+          <div class="add-row">
+            <input [(ngModel)]="newLearnSkill" class="input" placeholder="Type skill name (e.g. Spring Boot)">
+            <button class="btn-primary" (click)="addSkill(false)" [disabled]="addingSkill">Add</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="success-box" *ngIf="saved">✓ Profile saved successfully!</div>
+      <div class="error-box" *ngIf="error">{{ error }}</div>
+      <div class="pactions">
+        <button class="btn-primary" (click)="save()" [disabled]="saving">{{ saving?'Saving...':'Save Profile' }}</button>
+      </div>
+    </div>
+  </div>
+</div>
