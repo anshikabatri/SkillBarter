@@ -9,8 +9,10 @@ import com.cts.mfrp.skillbarter.repo.SessionRepo;
 import com.cts.mfrp.skillbarter.repo.SkillRepo;
 import com.cts.mfrp.skillbarter.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +30,19 @@ public class SessionService {
     private final NotificationService notificationService;
 
     public Session createSession(Session session) {
+        if (session == null || session.getMentor() == null || session.getLearner() == null || session.getSkill() == null
+                || session.getMentor().getUserId() == null || session.getLearner().getUserId() == null || session.getSkill().getSkillId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "mentor.userId, learner.userId and skill.skillId are required");
+        }
+
+        LocalDateTime scheduledAt = session.getScheduledAt();
+        if (scheduledAt == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Please provide a valid session date and time");
+        }
+        if (!scheduledAt.isAfter(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session time is in the past. Please choose a future date and time");
+        }
+
         User mentor  = userRepo.findById(session.getMentor().getUserId())
                 .orElseThrow(() -> new RuntimeException("Mentor not found"));
         User learner = userRepo.findById(session.getLearner().getUserId())

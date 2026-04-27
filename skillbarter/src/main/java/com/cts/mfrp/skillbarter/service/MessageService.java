@@ -24,6 +24,13 @@ public class MessageService {
     private UserRepo userRepo;
 
     public Message sendMessage(Integer sessionId, Integer senderId, String content) {
+        if (sessionId == null || senderId == null) {
+            throw new RuntimeException("sessionId and senderId are required");
+        }
+        if (content == null || content.trim().isEmpty()) {
+            throw new RuntimeException("Message content cannot be empty");
+        }
+
         Session session = sessionRepo.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Session not found with id: " + sessionId));
         User sender = userRepo.findById(senderId)
@@ -32,7 +39,7 @@ public class MessageService {
         Message message = new Message();
         message.setSession(session);
         message.setSender(sender);
-        message.setContent(content);
+        message.setContent(content.trim());
         return messageRepo.save(message);
     }
 

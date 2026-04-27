@@ -130,7 +130,7 @@ export class DashboardComponent implements OnInit {
   today = new Date(); days: any[] = [];
   matches: any[] = []; sessions: any[] = []; upcoming: any[] = [];
   loadingMatches = true;
-  eventDates: number[] = [];
+  eventDates = new Set<string>();
   colors = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4'];
   gc(n: string) { return this.colors[(n?.charCodeAt(0)||0) % this.colors.length]; }
   get completedSessions() { return this.sessions.filter(s => (s.status||'').toLowerCase() === 'completed').length; }
@@ -172,23 +172,46 @@ export class DashboardComponent implements OnInit {
 
   loadSessions(id: number) {
     this.api.getSessionsByLearner(id).subscribe({
-      next: d => {
-        this.sessions = d||[];
-        this.upcoming = this.sessions.filter(s => (s.status||'').toLowerCase() === 'scheduled');
-        this.eventDates = this.sessions.map(s => new Date(s.scheduledAt).getDate());
-      }, error: () => {}
-    });
-    this.api.getSessionsByMentor(id).subscribe({
-      next: d => {
-        const mentor = d||[];
-        this.sessions = [...this.sessions, ...mentor];
-        const mUpcoming = mentor.filter(s => (s.status||'').toLowerCase() === 'scheduled');
-        this.upcoming = [...this.upcoming, ...mUpcoming];
-      }, error: () => {}
+      next: learnerSessions => {
+        const learner = learnerSessions || [];
+        this.api.getSessionsByMentor(id).subscribe({
+          next: mentorSessions => {
+            const mentor = mentorSessions || [];
+            const combined = [...learner, ...mentor];
+            this.sessions = Array.from(new Map(combined.map((s: any) => [s?.sessionId, s])).values());
+            this.upcoming = this.sessions.filter(s => (s.status || '').toLowerCase() === 'scheduled');
+            this.eventDates = new Set(
+              this.sessions
+                .map((s: any) => this.toDateKey(s?.scheduledAt))
+                .filter((x: string | null): x is string => !!x)
+            );
+          },
+          error: () => {
+            this.sessions = learner;
+            this.upcoming = learner.filter(s => (s.status || '').toLowerCase() === 'scheduled');
+            this.eventDates = new Set(
+              learner
+                .map((s: any) => this.toDateKey(s?.scheduledAt))
+                .filter((x: string | null): x is string => !!x)
+            );
+          }
+        });
+      },
+      error: () => {}
     });
   }
 
-  hasEvt(d: any) { return d.c && this.eventDates.includes(d.d); }
+  private toDateKey(value: any): string | null {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+  }
+
+  hasEvt(d: any) {
+    if (!d?.c) return false;
+    return this.eventDates.has(`${this.cy}-${this.cm}-${d.d}`);
+  }
   buildCal() {
     const f = new Date(this.cy, this.cm, 1), l = new Date(this.cy, this.cm+1, 0);
     const days: any[] = [];

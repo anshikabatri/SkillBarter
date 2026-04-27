@@ -23,7 +23,7 @@ import { AuthService } from '../../services/auth.service';
 
         <div class="contact" *ngFor="let s of filtered" [class.active]="selected?.sessionId===s.sessionId" [class.unread]="isUnread(s)" (click)="selectSession(s)">
           <div class="cav-wrap">
-            <div class="cav" [style.background]="gc(getOther(s))">{{ getOther(s)?.charAt(0) }}</div>
+            <div class="cav" [style.background]="gc(getOther(s))">{{ getOther(s).charAt(0) }}</div>
             <span class="notify-dot" *ngIf="isUnread(s)"></span>
           </div>
           <div class="cinfo">
@@ -39,7 +39,7 @@ import { AuthService } from '../../services/auth.service';
 
       <div class="chat-win" *ngIf="selected">
         <div class="chat-header">
-          <div class="chav" [style.background]="gc(getOther(selected))">{{ getOther(selected)?.charAt(0) }}</div>
+          <div class="chav" [style.background]="gc(getOther(selected))">{{ getOther(selected).charAt(0) }}</div>
           <div><h3>{{ getOther(selected) }}</h3><span class="skill-tag">{{ selected.skill?.name }}</span></div>
         </div>
         <div class="messages" #messagesContainer>

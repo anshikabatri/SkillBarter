@@ -29,7 +29,7 @@ template: `
           <option *ngFor="let s of mentorSkills" [ngValue]="s.skillId">{{ s.name }}{{ s.kind ? ' (' + s.kind + ')' : '' }}</option>
         </select>
 
-        <input class="input" type="datetime-local" [(ngModel)]="request.scheduledAt">
+        <input class="input" type="datetime-local" [(ngModel)]="request.scheduledAt" [min]="minScheduledAt">
       </div>
 
       <div class="req-actions">
@@ -86,6 +86,12 @@ export class CalendarComponent implements OnInit {
   statusSuccess = '';
   statusError = '';
   reviewedSessionIds = new Set<number>();
+  get minScheduledAt(): string {
+    const now = new Date();
+    now.setSeconds(0, 0);
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+  }
   get filtered(){return this.sessions.filter(s=>this.tab==='upcoming'?(s.status||'').toLowerCase()==='scheduled':['completed','cancelled'].includes((s.status||'').toLowerCase()));}
   constructor(private auth:AuthService,private api:ApiService){}
   ngOnInit(){
@@ -251,6 +257,18 @@ export class CalendarComponent implements OnInit {
     this.requestSuccess = '';
     if (!this.userId) { this.requestError = 'Please login again.'; return; }
     if (!this.request.mentorId || !this.request.skillId || !this.request.scheduledAt) { this.requestError = 'Please fill all fields.'; return; }
+
+    const selectedDate = new Date(this.request.scheduledAt);
+    if (Number.isNaN(selectedDate.getTime())) {
+      this.requestError = 'Please enter a valid session date and time.';
+      return;
+    }
+
+    if (selectedDate.getTime() <= Date.now()) {
+      this.requestError = 'Session time is in the past. Please choose a future date and time.';
+      return;
+    }
+
     this.submitting = true;
     this.api.createSession({
       mentor: { userId: this.request.mentorId },

@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { TopbarComponent } from '../topbar/topbar.component';
 import { ApiService } from '../../services/api.service';
@@ -9,7 +10,7 @@ import { map } from 'rxjs/operators';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TopbarComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, TopbarComponent],
   template: `
     <div class="layout">
       <aside class="sidebar">

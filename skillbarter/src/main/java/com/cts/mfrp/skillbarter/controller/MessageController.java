@@ -20,9 +20,14 @@ public class MessageController {
     // Body: { "sessionId": 1, "senderId": 2, "content": "Hello!" }
     @PostMapping
     public ResponseEntity<ApiResponse<Message>> sendMessage(@RequestBody Map<String, Object> request) {
-        Integer sessionId = (Integer) request.get("sessionId");
-        Integer senderId = (Integer) request.get("senderId");
-        String content = (String) request.get("content");
+        Integer sessionId = request.get("sessionId") != null ? ((Number) request.get("sessionId")).intValue() : null;
+        Integer senderId = request.get("senderId") != null ? ((Number) request.get("senderId")).intValue() : null;
+        String content = request.get("content") != null ? String.valueOf(request.get("content")) : null;
+
+        if (sessionId == null || senderId == null || content == null || content.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("sessionId, senderId and non-empty content are required"));
+        }
+
         Message message = messageService.sendMessage(sessionId, senderId, content);
         return ResponseEntity.ok(ApiResponse.success("Message sent successfully", message));
     }

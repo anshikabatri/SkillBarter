@@ -108,7 +108,9 @@ public class UserService {
 
     public User addXp(Integer id, Integer points) {
         User user = findOrThrow(id);
-        user.setXp(user.getXp() + points);
+        int currentXp = user.getXp() == null ? 0 : user.getXp();
+        int add = points == null ? 0 : points;
+        user.setXp(currentXp + add);
         return userRepo.save(user);
     }
 

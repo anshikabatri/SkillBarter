@@ -3,8 +3,6 @@ import com.cts.mfrp.skillbarter.model.Skill;
 import com.cts.mfrp.skillbarter.model.UserSkill;
 import com.cts.mfrp.skillbarter.service.SkillService;
 import com.cts.mfrp.skillbarter.service.UserSkillService;
-import com.cts.mfrp.skillbarter.model.*;
-import com.cts.mfrp.skillbarter.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -2,7 +2,6 @@ package com.cts.mfrp.skillbarter.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -35,12 +34,12 @@ public class Session {
     private Skill skill;
 
     @NotNull(message = "Scheduled time is required")
-    @Future(message = "Session must be scheduled in the future")
     @Column(name = "scheduled_at", nullable = false)
     private LocalDateTime scheduledAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", columnDefinition = "ENUM('Scheduled','Completed','Cancelled') DEFAULT 'Scheduled'")
+    @Builder.Default
     private SessionStatus status = SessionStatus.Scheduled;
 
     public enum SessionStatus {

@@ -63,9 +63,11 @@ import { ApiService } from '../../services/api.service';
           <button class="mark-all" (click)="markAllRead()" *ngIf="unreadCount>0">Mark all read</button>
         </div>
         <div class="notif-empty" *ngIf="notifications.length===0">No notifications yet</div>
-        <div class="notif-item" *ngFor="let n of notifications" [class.unread]="!n.isRead" (click)="markRead(n)">
-          <div class="notif-title">{{ n.type || 'Notification' }}</div>
-          <div class="notif-msg">{{ n.content || n.message }}</div>
+        <div class="notif-list" *ngIf="notifications.length>0">
+          <div class="notif-item" *ngFor="let n of notifications" [class.unread]="!n.isRead" (click)="markRead(n)">
+            <div class="notif-title">{{ n.type || 'Notification' }}</div>
+            <div class="notif-msg">{{ n.content || n.message }}</div>
+          </div>
         </div>
       </div>
     </header>
@@ -96,6 +98,9 @@ import { ApiService } from '../../services/api.service';
     .notif-header h3 { font-size:16px; font-weight:700; }
     .mark-all { background:none; border:none; color:var(--blue); font-size:12px; cursor:pointer; }
     .notif-empty { text-align:center; color:var(--text2); font-size:14px; padding:20px 0; }
+    .notif-list { max-height:320px; overflow-y:auto; padding-right:4px; }
+    .notif-list::-webkit-scrollbar { width:6px; }
+    .notif-list::-webkit-scrollbar-thumb { background:var(--border2); border-radius:8px; }
     .notif-item { padding:12px; border-radius:10px; margin-bottom:6px; cursor:pointer; transition:background 0.15s; border:1px solid transparent; }
     .notif-item:hover { background:var(--bg3); }
     .notif-item.unread { border-color:var(--border); background:var(--bg3); }

@@ -45,6 +45,7 @@ public class User {
     private String languagesSpoken;
 
     @Column(name = "xp")
+    @Builder.Default
     private Integer xp = 0;
 
     @Column(name = "created_at", updatable = false)

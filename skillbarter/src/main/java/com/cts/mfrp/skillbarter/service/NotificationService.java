@@ -6,6 +6,9 @@ import com.cts.mfrp.skillbarter.repo.NotificationRepo;
 import com.cts.mfrp.skillbarter.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Service
@@ -17,6 +20,7 @@ public class NotificationService {
     @Autowired
     private UserRepo userRepo;
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Notification createNotification(Integer userId, Notification.NotificationType type, String content) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
@@ -24,9 +28,13 @@ public class NotificationService {
         Notification notification = new Notification();
         notification.setUser(user);
         notification.setType(type);
-        notification.setContent(content);
+        String safeContent = (content == null || content.isBlank()) ? "Notification" : content.trim();
+        if (safeContent.length() > 255) {
+            safeContent = safeContent.substring(0, 252) + "...";
+        }
+        notification.setContent(safeContent);
         notification.setIsRead(false);
-        return notificationRepo.save(notification);
+        return notificationRepo.saveAndFlush(notification);
     }
 
     public List<Notification> getNotificationsByUser(Integer userId) {

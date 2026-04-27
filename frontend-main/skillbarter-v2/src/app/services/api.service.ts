@@ -12,7 +12,7 @@ export class ApiService {
   // ── USERS ── /api/users
   getUser(id: number): Observable<any> { return this.http.get(`${this.base}/users/${id}`); }
   getAllUsers(): Observable<any[]> { return this.http.get<any[]>(`${this.base}/users`); }
-  searchUsers(name: string): Observable<any[]> { return this.http.get<any[]>(`${this.base}/users/search?name=${name}`); }
+  searchUsers(name: string): Observable<any[]> { return this.http.get<any[]>(`${this.base}/users/search?name=${encodeURIComponent(name)}`); }
   updateUser(id: number, data: any): Observable<any> { return this.http.put(`${this.base}/users/${id}`, data); }
   addXp(id: number, points: number): Observable<any> { return this.http.patch(`${this.base}/users/${id}/xp?points=${points}`, {}); }
   uploadProfilePhoto(id: number, file: File): Observable<any> {
@@ -23,7 +23,7 @@ export class ApiService {
 
   // ── SKILLS ── /api/skills & /api/user-skills
   getAllSkills(): Observable<any[]> { return this.http.get<any[]>(`${this.base}/skills`); }
-  searchSkills(query: string): Observable<any[]> { return this.http.get<any[]>(`${this.base}/skills/search?query=${query}`); }
+  searchSkills(query: string): Observable<any[]> { return this.http.get<any[]>(`${this.base}/skills/search?query=${encodeURIComponent(query)}`); }
   getSkillsByCategory(id: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/skills/category/${id}`); }
   getUserSkills(userId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/user-skills/${userId}`); }
   addUserSkill(data: any): Observable<any> { return this.http.post(`${this.base}/user-skills`, data); }
