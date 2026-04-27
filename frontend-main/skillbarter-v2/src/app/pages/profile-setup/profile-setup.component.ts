@@ -9,33 +9,8 @@ import { ApiService } from '../../services/api.service';
   selector: 'app-profile-setup',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  template: `
-    <div class="setup-page">
-      <div class="glow"></div>
-      <div class="setup-card">
-        <div class="brand">SkillBarter</div>
-        <h1>Set Up Your Profile</h1>
-        <p class="sub">Just add your basic profile details</p>
-        <div class="form-group"><label>Your Name</label><input type="text" [(ngModel)]="form.name" class="input" placeholder="Full name"></div>
-        <div class="form-group"><label>About You</label><textarea [(ngModel)]="form.bio" class="input ta" placeholder="Tell others what you're about..."></textarea></div>
-        <div class="error-box" *ngIf="error">{{ error }}</div>
-        <button class="btn-primary w100" (click)="save()" [disabled]="loading">{{ loading ? 'Saving...' : 'Continue to Dashboard →' }}</button>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .setup-page { min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); padding:40px 20px; position:relative; }
-    .glow { position:absolute; width:500px; height:500px; background:radial-gradient(circle,rgba(59,130,246,0.08) 0%,transparent 70%); top:50%; left:50%; transform:translate(-50%,-50%); }
-    .setup-card { position:relative; z-index:1; background:var(--card); border:1px solid var(--border); border-radius:20px; padding:40px; width:100%; max-width:460px; }
-    .brand { font-family:'Syne',sans-serif; font-size:17px; font-weight:800; color:var(--blue); margin-bottom:20px; }
-    h1 { font-size:24px; font-weight:800; margin-bottom:6px; }
-    .sub { color:var(--text2); font-size:14px; margin-bottom:24px; }
-    .form-group { margin-bottom:16px; }
-    label { display:block; font-size:13px; color:var(--text2); margin-bottom:6px; font-weight:500; }
-    .ta { min-height:72px; resize:vertical; }
-    .w100 { width:100%; padding:13px; font-size:15px; margin-top:8px; }
-    .error-box { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:10px 14px; color:#f87171; font-size:13px; margin-bottom:12px; }
-  `]
+  templateUrl: './profile-setup.component.html',
+  styleUrl: './profile-setup.component.css'
 })
 export class ProfileSetupComponent implements OnInit {
   form: any = { name: '', bio: '' };

@@ -10,69 +10,8 @@ import { Observable, of } from 'rxjs';
   selector: 'app-matches',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  template: `
-    <div class="matches-page">
-      <div class="tabs">
-        <button [class.active]="tab==='find'" (click)="tab='find'">Find New Matches</button>
-        <button [class.active]="tab==='my'" (click)="tab='my';loadMyMatches()">My Matches</button>
-      </div>
-
-      <ng-container *ngIf="tab==='find'">
-        <div class="filters">
-          <input type="text" [(ngModel)]="searchQuery" class="input search-input" placeholder="Search users by name..." (keyup.enter)="searchUsers()">
-          <button class="btn-primary" (click)="searchUsers()">Search</button>
-        </div>
-        <div class="loading" *ngIf="loading">Searching...</div>
-        <div class="empty" *ngIf="!loading&&searchResults.length===0&&searched">No users found.</div>
-        <div class="grid" *ngIf="searchResults.length>0">
-          <div class="ucard" *ngFor="let u of searchResults">
-            <div class="uav" [style.background]="gc(u.user?.name || u.name)">{{ (u.user?.name || u.name)?.charAt(0) }}</div>
-            <h3>{{ u.user?.name || u.name }}</h3>
-            <p class="uemail">{{ u.user?.email || u.email }}</p>
-            <p class="ubio" *ngIf="u.user?.bio || u.bio">{{ u.user?.bio || u.bio }}</p>
-            <div class="mscore">{{ displayScore(u.score ?? u.matchScore) }}</div>
-            <button class="btn-primary btn-sm" [disabled]="u.alreadyMatched" (click)="createMatch(u)">{{ u.alreadyMatched ? 'Connected' : 'Connect' }}</button>
-          </div>
-        </div>
-        <div class="hint" *ngIf="!searched">
-          <p>Search for users to find skill matches.</p>
-          <button class="btn-primary" (click)="loadAllUsers()">Browse All Users</button>
-        </div>
-      </ng-container>
-
-      <ng-container *ngIf="tab==='my'">
-        <div class="loading" *ngIf="loading">Loading matches...</div>
-        <div class="empty" *ngIf="!loading&&myMatches.length===0">No matches yet. Find people to connect with!</div>
-        <div class="grid" *ngIf="myMatches.length>0">
-          <div class="mcard" *ngFor="let m of myMatches">
-            <div class="mav" [style.background]="gc(otherUser(m)?.name)">{{ (otherUser(m)?.name||'?').charAt(0) }}</div>
-            <h3>{{ otherUser(m)?.name }}</h3>
-            <div class="mscore">{{ displayScore(m.matchScore) }}</div>
-            <div class="mdate">Connected {{ m.createdAt | date:'MMM d, y' }}</div>
-            <a routerLink="/app/chat" class="btn-primary btn-sm">Message</a>
-          </div>
-        </div>
-      </ng-container>
-      <div class="empty" *ngIf="message">{{ message }}</div>
-    </div>
-  `,
-  styles: [`
-    .matches-page { max-width:1000px; }
-    .tabs { display:flex; gap:8px; margin-bottom:24px; }
-    .tabs button { padding:9px 20px; border-radius:10px; border:1px solid var(--border2); background:transparent; color:var(--text2); font-size:14px; font-weight:500; cursor:pointer; transition:all 0.2s; }
-    .tabs button.active { background:var(--blue); color:white; border-color:var(--blue); }
-    .filters { display:flex; gap:12px; margin-bottom:24px; }
-    .search-input { flex:1; }
-    .loading,.empty,.hint { color:var(--text2); font-size:14px; padding:20px 0; text-align:center; }
-    .hint { display:flex; flex-direction:column; align-items:center; gap:16px; padding:40px; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; }
-    .ucard,.mcard { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center; }
-    .uav,.mav { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; color:white; font-family:'Syne',sans-serif; }
-    .ucard h3,.mcard h3 { font-size:16px; font-weight:700; }
-    .uemail,.ubio,.mdate { font-size:12px; color:var(--text2); }
-    .mscore { font-size:18px; font-weight:800; color:var(--blue); font-family:'Syne',sans-serif; }
-    .btn-sm { padding:7px 18px; font-size:13px; margin-top:4px; }
-  `]
+  templateUrl: './matches.component.html',
+  styleUrl: './matches.component.css'
 })
 export class MatchesComponent implements OnInit {
   tab = 'find';

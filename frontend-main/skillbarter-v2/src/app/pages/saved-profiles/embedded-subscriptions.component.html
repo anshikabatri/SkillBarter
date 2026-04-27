@@ -1,0 +1,12 @@
+<div class="subs-page">
+  <h1>SkillBarter+ Subscriptions</h1>
+  <p class="sub">Unlock bonus SP, priority support, and premium features.</p>
+  <div class="plans">
+    <div class="plan card" *ngFor="let p of plans" [class.featured]="p.featured">
+      <h2>{{ p.name }}</h2>
+      <div class="price">₹{{ p.price }}<span>/mo</span></div>
+      <ul><li *ngFor="let f of p.features">{{ f }}</li></ul>
+      <button class="btn-soon" disabled>Coming Soon</button>
+    </div>
+  </div>
+</div>

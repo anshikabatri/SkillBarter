@@ -5,69 +5,12 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
 
-@Component({ selector: 'app-calendar', standalone: true, imports: [CommonModule, FormsModule],
-template: `
-<div class="cal-page">
-  <div class="card cal-card">
-    <div class="calh"><button class="cn" (click)="prev()">‹</button><span class="ct">{{ ms[cm] }} {{ cy }}</span><button class="cn" (click)="next()">›</button></div>
-    <div class="cg">
-      <div class="dn" *ngFor="let d of dns">{{ d }}</div>
-      <div *ngFor="let d of days" class="cd" [class.today]="isTd(d)" [class.other]="!d.c">{{ d.d||'' }}</div>
-    </div>
-    <button class="btn-primary new-btn" (click)="toggleRequestForm()">+ New Session Request</button>
-
-    <div class="req-box" *ngIf="showRequest">
-      <h4>Create Session Request</h4>
-      <div class="req-grid">
-        <select class="input" [(ngModel)]="request.mentorId" (change)="onMentorChange()">
-          <option [ngValue]="null">Select match</option>
-          <option *ngFor="let m of requestMatches" [ngValue]="m.userId">{{ m.name }}</option>
-        </select>
-
-        <select class="input" [(ngModel)]="request.skillId" [disabled]="!request.mentorId">
-          <option [ngValue]="null">Select skill</option>
-          <option *ngFor="let s of mentorSkills" [ngValue]="s.skillId">{{ s.name }}{{ s.kind ? ' (' + s.kind + ')' : '' }}</option>
-        </select>
-
-        <input class="input" type="datetime-local" [(ngModel)]="request.scheduledAt" [min]="minScheduledAt">
-      </div>
-
-      <div class="req-actions">
-        <button class="btn-primary" (click)="submitRequest()" [disabled]="submitting">{{ submitting ? 'Creating...' : 'Create Request' }}</button>
-        <button class="btn-secondary" (click)="showRequest=false">Cancel</button>
-      </div>
-      <div class="loading" *ngIf="loadingRequestData">Loading matches/skills...</div>
-      <div class="empty" *ngIf="requestError">{{ requestError }}</div>
-      <div class="success" *ngIf="requestSuccess">{{ requestSuccess }}</div>
-    </div>
-  </div>
-  <div class="card sess-card">
-    <div class="stabs">
-      <button [class.active]="tab==='upcoming'" (click)="tab='upcoming'">Upcoming</button>
-      <button [class.active]="tab==='history'" (click)="tab='history'">History</button>
-    </div>
-    <div class="loading" *ngIf="loading">Loading...</div>
-    <div class="empty" *ngIf="!loading&&filtered.length===0">No {{ tab }} sessions.</div>
-    <div class="sitem" *ngFor="let s of filtered">
-      <div class="si-dot" [class]="(s.status||'').toLowerCase()"></div>
-      <div class="si-info">
-        <div class="si-name">{{ s.skill?.name || 'Session' }}</div>
-        <div class="si-time">{{ s.scheduledAt | date:'MMM d, y · h:mm a' }}</div>
-        <div class="si-with">with {{ withUser(s) }}</div>
-      </div>
-      <button class="rate-btn" *ngIf="canRate(s)" (click)="rateSession(s)">Rate</button>
-      <button class="ack-btn" *ngIf="tab==='upcoming' && ((s.status||'').toLowerCase()==='scheduled')"
-              [disabled]="completingSessionId===s.sessionId"
-              (click)="markComplete(s)">
-        {{ completingSessionId===s.sessionId ? 'Saving...' : 'Mark as Complete' }}
-      </button>
-      <span class="sbadge" [class]="(s.status||'').toLowerCase()">{{ s.status }}</span>
-    </div>
-    <div class="success" *ngIf="statusSuccess">{{ statusSuccess }}</div>
-    <div class="empty" *ngIf="statusError">{{ statusError }}</div>
-  </div>
-</div>`,
-styles: [`.cal-page{display:flex;gap:20px;align-items:flex-start}.card{background:var(--card);border-radius:16px;border:1px solid var(--border);padding:22px}.cal-card{flex:1}.calh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.ct{font-size:16px;font-weight:700;font-family:'Syne',sans-serif}.cn{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer}.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:20px}.dn{text-align:center;font-size:11px;color:var(--text3);padding:6px 0;font-weight:600}.cd{text-align:center;padding:9px 2px;border-radius:8px;font-size:14px;cursor:pointer;transition:background 0.15s}.cd:hover:not(.other){background:var(--bg3)}.cd.today{background:var(--blue);color:white;border-radius:50%;font-weight:700}.cd.other{color:var(--text3)}.new-btn{display:block;text-align:center;width:100%;padding:13px;border-radius:10px;text-decoration:none}.req-box{margin-top:14px;border:1px solid var(--border2);border-radius:12px;padding:14px;background:var(--bg3)}.req-box h4{font-size:14px;font-weight:700;margin-bottom:10px}.req-grid{display:grid;grid-template-columns:1fr;gap:10px}.req-grid input[type="datetime-local"]{background:#fff;color:#0f172a;border:1px solid #d0d7e2;color-scheme:light}.req-grid input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:none;opacity:1;cursor:pointer}.req-actions{display:flex;gap:8px;margin-top:10px}.btn-secondary{padding:10px 14px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer}.success{color:var(--green);font-size:13px;padding-top:8px}.sess-card{width:300px}.stabs{display:flex;gap:6px;margin-bottom:18px}.stabs button{padding:7px 16px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer}.stabs button.active{background:var(--blue);color:white;border-color:var(--blue)}.loading,.empty{color:var(--text2);font-size:13px;padding:12px 0}.sitem{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--border2)}.si-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}.si-dot.scheduled,.si-dot.SCHEDULED{background:var(--blue)}.si-dot.completed,.si-dot.COMPLETED{background:var(--green)}.si-dot.cancelled,.si-dot.CANCELLED{background:var(--red)}.si-info{flex:1}.si-name{font-size:14px;font-weight:600;margin-bottom:3px}.si-time,.si-with{font-size:12px;color:var(--text2)}.rate-btn{border:1px solid var(--blue);background:rgba(59,130,246,0.15);color:var(--blue);font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;cursor:pointer;align-self:center;white-space:nowrap}.ack-btn{border:1px solid var(--green);background:rgba(16,185,129,0.15);color:var(--green);font-size:11px;font-weight:700;padding:5px 8px;border-radius:8px;cursor:pointer;align-self:center;white-space:nowrap}.ack-btn:disabled{opacity:0.6;cursor:not-allowed}.sbadge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}.sbadge.scheduled,.sbadge.SCHEDULED{background:rgba(59,130,246,0.15);color:var(--blue)}.sbadge.completed,.sbadge.COMPLETED{background:rgba(16,185,129,0.15);color:var(--green)}.sbadge.cancelled,.sbadge.CANCELLED{background:rgba(239,68,68,0.15);color:var(--red)}`]
+@Component({
+  selector: 'app-calendar',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './calendar.component.html',
+  styleUrl: './calendar.component.css'
 })
 export class CalendarComponent implements OnInit {
   dns=['Su','Mo','Tu','We','Th','Fr','Sa']; ms=['January','February','March','April','May','June','July','August','September','October','November','December'];

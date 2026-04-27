@@ -1,0 +1,59 @@
+<div class="dash">
+  <div class="left">
+    <div class="card">
+      <div class="ch"><h2>Activity</h2><span class="pill">Today</span></div>
+      <div class="empty" *ngIf="sessions.length===0">
+        <div class="ei">🎯</div>
+        <h3>Ready for your first session?</h3>
+        <p>Book a session to start tracking activity and earning XP.</p>
+        <a routerLink="/app/calendar" class="btn-primary">Schedule a session</a>
+      </div>
+      <div *ngIf="sessions.length>0">
+        <div class="sess-item" *ngFor="let s of sessions">
+          <div><div class="sn">{{ s.mentor?.name || s.learner?.name || 'Session' }}</div><div class="st">{{ s.scheduledAt | date:'MMM d, h:mm a' }}</div></div>
+          <span class="sbadge" [class]="(s.status||'').toLowerCase()">{{ s.status }}</span>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><span>Sessions completed</span><strong>{{ completedSessions }}</strong></div>
+        <div class="stat"><span>Upcoming sessions</span><strong>{{ upcomingCount }}</strong></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><h2>Top Matches</h2><a routerLink="/app/matches" class="link">see all →</a></div>
+      <div class="loading" *ngIf="loadingMatches">Loading...</div>
+      <div class="empty-sm" *ngIf="!loadingMatches&&matches.length===0">
+        No matches yet. <a routerLink="/app/matches" class="link">Find matches</a>
+      </div>
+      <div class="mrow" *ngIf="matches.length>0">
+        <div class="mc" *ngFor="let m of matches.slice(0,3)">
+          <div class="mav" [style.background]="gc(m.user2?.name||m.user1?.name)">{{ (m.user2?.name||m.user1?.name||'?').charAt(0) }}</div>
+          <div class="mn">{{ m.user2?.name || m.user1?.name }}</div>
+          <div class="ms">{{ formatMatchScore(m) }}</div>
+          <a routerLink="/app/matches" class="btn-sm">View</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card cal-card">
+    <div class="calh">
+      <button class="cn" (click)="prev()">‹</button>
+      <span class="ct">{{ months[cm] }} {{ cy }}</span>
+      <button class="cn" (click)="next()">›</button>
+    </div>
+    <div class="cg">
+      <div class="dn" *ngFor="let d of dns">{{ d }}</div>
+      <div *ngFor="let d of days" class="cd" [class.today]="isTd(d)" [class.other]="!d.c" [class.evt]="hasEvt(d)">{{ d.d||'' }}</div>
+    </div>
+    <div class="upcoming">
+      <h4>Upcoming</h4>
+      <div class="empty-sm" *ngIf="upcoming.length===0">No upcoming sessions</div>
+      <div class="ui" *ngFor="let s of upcoming.slice(0,3)">
+        <div class="udot"></div>
+        <div><div class="un">{{ s.skill?.name || 'Session' }}</div><div class="ut">{{ s.scheduledAt | date:'MMM d, h:mm a' }}</div></div>
+      </div>
+    </div>
+  </div>
+</div>

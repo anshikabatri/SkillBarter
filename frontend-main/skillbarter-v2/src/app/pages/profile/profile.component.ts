@@ -4,74 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 
-@Component({ selector: 'app-profile', standalone: true, imports: [CommonModule, FormsModule],
-template:`
-<div class="profile-page">
-  <div class="card profile-card">
-    <div class="pav-section">
-      <div class="pav" [style.background]="gc(form.name)">
-        <img *ngIf="photoPreview || user?.profilePhotoUrl" [src]="photoPreview || user?.profilePhotoUrl" class="pimg" alt="Profile photo">
-        <span *ngIf="!photoPreview && !user?.profilePhotoUrl">{{ form.name.charAt(0)||'U' }}</span>
-      </div>
-      <div class="pav-name">{{ form.name }}</div>
-      <div class="pav-email">{{ user?.email }}</div>
-
-      <button class="btn-ghost" *ngIf="user?.profilePhotoUrl && !showPhotoPicker" (click)="showPhotoPicker = true">
-        Change Photo
-      </button>
-
-      <div *ngIf="showPhotoPicker">
-        <input type="file" accept="image/*" class="file-input" (change)="onPhotoSelected($event)">
-        <div class="file-name" *ngIf="selectedPhoto">Selected: {{ selectedPhoto.name }}</div>
-        <button class="btn-primary" (click)="uploadPhoto()" [disabled]="!selectedPhoto || uploadingPhoto">
-          {{ uploadingPhoto ? 'Uploading...' : (user?.profilePhotoUrl ? 'Update Photo' : 'Upload Photo') }}
-        </button>
-      </div>
-
-      <div class="photo-info" *ngIf="photoSavedMessage">
-        {{ photoSavedMessage }}
-        <div *ngIf="photoUpdatedAt">Updated at: {{ photoUpdatedAt }}</div>
-      </div>
-    </div>
-    <div class="pform">
-      <div class="fg"><label>Your Name</label><input [(ngModel)]="form.name" class="input" placeholder="Full name"></div>
-      <div class="fg"><label>Profile Description</label><textarea [(ngModel)]="form.bio" class="input ta" placeholder="Tell others about yourself..."></textarea></div>
-
-      <div class="skills-wrap">
-        <div class="skills-col">
-          <label>Skills I Have (Teach)</label>
-          <div class="tags">
-            <span class="tag" *ngFor="let s of teachSkills">{{ s.skill?.name || s.name }}</span>
-            <span class="empty-sm" *ngIf="teachSkills.length===0">No skills added yet.</span>
-          </div>
-          <div class="add-row">
-            <input [(ngModel)]="newTeachSkill" class="input" placeholder="Type skill name (e.g. Angular)">
-            <button class="btn-primary" (click)="addSkill(true)" [disabled]="addingSkill">Add</button>
-          </div>
-        </div>
-
-        <div class="skills-col">
-          <label>Skills I Need to Learn</label>
-          <div class="tags">
-            <span class="tag learn" *ngFor="let s of learnSkills">{{ s.skill?.name || s.name }}</span>
-            <span class="empty-sm" *ngIf="learnSkills.length===0">No skills added yet.</span>
-          </div>
-          <div class="add-row">
-            <input [(ngModel)]="newLearnSkill" class="input" placeholder="Type skill name (e.g. Spring Boot)">
-            <button class="btn-primary" (click)="addSkill(false)" [disabled]="addingSkill">Add</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="success-box" *ngIf="saved">✓ Profile saved successfully!</div>
-      <div class="error-box" *ngIf="error">{{ error }}</div>
-      <div class="pactions">
-        <button class="btn-primary" (click)="save()" [disabled]="saving">{{ saving?'Saving...':'Save Profile' }}</button>
-      </div>
-    </div>
-  </div>
-</div>`,
-styles:[`.profile-page{max-width:920px}.card{background:var(--card);border-radius:16px;border:1px solid var(--border);padding:32px}.profile-card{display:flex;gap:32px;align-items:flex-start}.pav-section{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:120px}.pav{width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;color:white;font-family:'Syne',sans-serif;overflow:hidden}.pimg{width:100%;height:100%;object-fit:cover}.file-input{width:100%;max-width:180px;font-size:12px;color:var(--text2)}.file-name{font-size:11px;color:var(--text2);margin:4px 0 6px}.photo-info{font-size:12px;color:#34d399;text-align:center;max-width:220px}.pav-name{font-size:15px;font-weight:700;text-align:center}.pav-email{font-size:12px;color:var(--text2);text-align:center}.pform{flex:1;display:flex;flex-direction:column;gap:16px}.fg{display:flex;flex-direction:column;gap:6px}label{font-size:13px;color:var(--text2);font-weight:500}.ta{min-height:80px;resize:vertical}.skills-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px}.skills-col{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:12px}.tags{display:flex;flex-wrap:wrap;gap:6px;min-height:30px;margin:8px 0}.tag{background:var(--blue-glow);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px}.tag.learn{background:rgba(16,185,129,0.12)}.empty-sm{color:var(--text3);font-size:12px}.add-row{display:flex;gap:8px}.add-row .input{flex:1}.success-box{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:10px 14px;color:#34d399;font-size:13px}.error-box{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 14px;color:#f87171;font-size:13px}.pactions{display:flex;gap:12px}button.btn-primary{padding:10px 18px}`]
+@Component({
+  selector: 'app-profile',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './profile.component.html',
+  styleUrl: './profile.component.css'
 })
 export class ProfileComponent implements OnInit {
   user:any; form={name:'',bio:''}; saving=false; saved=false; error='';

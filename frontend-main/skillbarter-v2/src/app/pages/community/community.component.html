@@ -1,0 +1,26 @@
+<div class="comm-page">
+  <div class="comm-header"><h1>Community</h1><button class="btn-primary" (click)="showForm=!showForm">{{ showForm?'Cancel':'Share Your Story' }}</button></div>
+  <div class="story-form card" *ngIf="showForm">
+    <h3>Share Your Story</h3>
+    <input [(ngModel)]="newStory.title" class="input" placeholder="Title (e.g. Swapped Python for Guitar lessons)">
+    <textarea [(ngModel)]="newStory.content" class="input ta" placeholder="Tell your story..." rows="4"></textarea>
+    <button class="btn-primary" (click)="submitStory()" [disabled]="posting">{{ posting?'Posting...':'Post Story' }}</button>
+  </div>
+  <div class="loading" *ngIf="loading">Loading stories...</div>
+  <div class="stories-grid" *ngIf="stories.length>0">
+    <div class="story-card card" *ngFor="let s of stories">
+      <div class="smeta"><span class="sauthor">{{ s.user?.name || 'User' }}</span><span class="stime">{{ s.createdAt | date:'MMM d' }}</span></div>
+      <h3>{{ s.title }}</h3>
+      <p>{{ s.content }}</p>
+    </div>
+  </div>
+  <div class="empty" *ngIf="!loading&&stories.length===0">No stories yet. Be the first to share!</div>
+  <div class="section-title">Top Contributors</div>
+  <div class="contrib-grid">
+    <div class="contrib-card card" *ngFor="let u of topUsers;let i=index">
+      <div class="rank">#{{ i+1 }}</div>
+      <div class="cav" [style.background]="gc(u.name)">{{ u.name?.charAt(0) }}</div>
+      <div class="cinfo"><div class="cname">{{ u.name }}</div><div class="cxp">{{ u.xp||u.xpPoints||u.skillPoints||0 }} XP</div></div>
+    </div>
+  </div>
+</div>
