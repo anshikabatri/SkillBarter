@@ -1,0 +1,18 @@
+.sb-theme-toggle {
+	position: fixed;
+	top: 14px;
+	right: 18px;
+	z-index: 9998;
+	width: 42px;
+	height: 42px;
+	border-radius: 10px;
+	border: 1px solid var(--border);
+	background: var(--card);
+	color: var(--text);
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.sb-theme-toggle:hover { transform: translateY(-2px); }

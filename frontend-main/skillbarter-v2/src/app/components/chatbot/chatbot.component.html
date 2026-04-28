@@ -1,0 +1,38 @@
+<div class="sb-chatbot" [class.open]="isOpen">
+  <button class="sb-toggle" (click)="toggle()" aria-label="Toggle chat">
+    <span *ngIf="!isOpen">💬</span>
+    <span *ngIf="isOpen">✕</span>
+  </button>
+
+  <div class="sb-window" *ngIf="isOpen">
+    <div class="sb-header">
+      <div class="sb-title">{{ translations[lang].assistantName }}</div>
+      <div class="sb-controls">
+        <div class="lang-group">
+          <button class="lang-btn" [class.active]="lang === 'en'" (click)="setLanguage('en')" title="English">EN</button>
+          <button class="lang-btn" [class.active]="lang === 'hi'" (click)="setLanguage('hi')" title="हिंदी">HI</button>
+          <button class="lang-btn" [class.active]="lang === 'te'" (click)="setLanguage('te')" title="తెలుగు">TE</button>
+          <button class="lang-btn" [class.active]="lang === 'ta'" (click)="setLanguage('ta')" title="தமிழ்">TA</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-body">
+      <div class="sb-messages">
+        <div *ngFor="let m of messages" [ngClass]="{'bot': m.from === 'bot', 'user': m.from === 'user'}" class="sb-message">
+          {{ m.text }}
+        </div>
+      </div>
+
+      <div class="sb-quick">{{ translations[lang].quickLabel }}</div>
+      <div class="sb-quick-list">
+        <button *ngFor="let q of cannedQuestions" class="sb-quick-btn" (click)="chooseQuestion(q)">{{ q }}</button>
+      </div>
+    </div>
+
+    <div class="sb-input">
+      <input type="text" [placeholder]="translations[lang].placeholder" [(ngModel)]="userInput" (keyup.enter)="sendUserInput()" />
+      <button (click)="sendUserInput()">{{ translations[lang].send }}</button>
+    </div>
+  </div>
+</div>
