@@ -19,8 +19,26 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private static final String[] PUBLIC_PATHS = {
+            "/api/auth/",
+            "/swagger-ui/",
+            "/swagger-ui.html",
+            "/v3/api-docs"
+    };
+
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        for (String publicPath : PUBLIC_PATHS) {
+            if (path.startsWith(publicPath)) {
+                return true;
+            }
+        }
+        return "/error".equals(path);
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
