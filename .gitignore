@@ -34,3 +34,4 @@ skillbarter/target/
 skillbarter/.env
 skillbarter/*.env
 skillbarter/src/main/resources/ca.pem
+skillbarter/src/main/resources/application.properties
