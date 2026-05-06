@@ -7,24 +7,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
-
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:4200")
-                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+        registry.addMapping("/**")
+                .allowedOrigins(
+                        "http://localhost:4200",
+                        "https://skill-barter-wine-theta.vercel.app"
+                )
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true)
-                .maxAge(3600);
-    }
-
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        Path uploadPath = Paths.get("uploads").toAbsolutePath().normalize();
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations(uploadPath.toUri().toString());
+                .allowCredentials(true);
     }
 }
