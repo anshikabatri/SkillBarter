@@ -47,8 +47,7 @@
         <div class="si-time">{{ s.scheduledAt | date:'MMM d, y · h:mm a' }}</div>
         <div class="si-with">with {{ withUser(s) }}</div>
       </div>
-        <a [href]="'https://meet.google.com/new'"
-           target="_blank"
+        <a [routerLink]="['/app/video-call', s.sessionId]"
            class="video-btn"
            *ngIf="tab==='upcoming' && (s.status||'').toLowerCase()==='scheduled'">
             📹 Join Call
