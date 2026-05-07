@@ -40,12 +40,19 @@
     <div class="loading" *ngIf="loading">Loading...</div>
     <div class="empty" *ngIf="!loading&&filtered.length===0">No {{ tab }} sessions.</div>
     <div class="sitem" *ngFor="let s of filtered">
+
       <div class="si-dot" [class]="(s.status||'').toLowerCase()"></div>
       <div class="si-info">
         <div class="si-name">{{ s.skill?.name || 'Session' }}</div>
         <div class="si-time">{{ s.scheduledAt | date:'MMM d, y · h:mm a' }}</div>
         <div class="si-with">with {{ withUser(s) }}</div>
       </div>
+        <a [href]="'https://meet.google.com/new'"
+           target="_blank"
+           class="video-btn"
+           *ngIf="tab==='upcoming' && (s.status||'').toLowerCase()==='scheduled'">
+            📹 Join Call
+        </a>
       <button class="rate-btn" *ngIf="canRate(s)" (click)="rateSession(s)">Rate</button>
       <button class="ack-btn" *ngIf="tab==='upcoming' && ((s.status||'').toLowerCase()==='scheduled')"
               [disabled]="completingSessionId===s.sessionId"

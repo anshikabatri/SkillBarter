@@ -21,6 +21,7 @@ export const routes: Routes = [
       { path: 'profile', loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent) },
       { path: 'saved-profiles', loadComponent: () => import('./pages/saved-profiles/saved-profiles.component').then(m => m.SavedProfilesComponent) },
       { path: 'subscriptions', loadComponent: () => import('./pages/subscriptions/subscriptions.component').then(m => m.SubscriptionsComponent) },
+      { path: 'video-call/:sessionId', loadComponent: () => import('./pages/video-call/video-call.component').then(m => m.VideoCallComponent) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

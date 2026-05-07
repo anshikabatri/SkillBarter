@@ -4,11 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
-
+import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],  // ← add RouterLink here
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css'
 })
