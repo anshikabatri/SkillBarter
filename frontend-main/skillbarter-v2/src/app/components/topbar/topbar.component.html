@@ -24,7 +24,11 @@
     </button>
     <div class="user-btn" (click)="toggleMenu($event)">
       <div class="avatar-circle">
-        <img *ngIf="user?.profilePhotoUrl" [src]="user.profilePhotoUrl" class="avatar-img" alt="Profile">
+          <img *ngIf="user?.profilePhotoUrl"
+               [src]="user.profilePhotoUrl"
+               class="avatar-img"
+               alt="Profile"
+               (error)="user.profilePhotoUrl = null">
         <span *ngIf="!user?.profilePhotoUrl">{{ userInitial }}</span>
       </div>
       <span class="user-name">{{ user?.name || 'User' }}</span>
