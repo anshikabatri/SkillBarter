@@ -63,4 +63,16 @@
       </div>
     </div>
   </div>
+    <!-- Incoming Call Overlay -->
+    <div class="call-overlay" *ngIf="incomingCall">
+        <div class="call-card">
+            <div class="call-icon">📹</div>
+            <div class="call-title">Incoming Call</div>
+            <div class="call-msg">{{ incomingCall.content || incomingCall.message }}</div>
+            <div class="call-actions">
+                <button class="accept-btn" (click)="acceptCall()">✅ Accept</button>
+                <button class="decline-btn" (click)="declineCall()">❌ Decline</button>
+            </div>
+        </div>
+    </div>
 </header>

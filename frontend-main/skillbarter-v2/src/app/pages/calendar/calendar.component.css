@@ -147,10 +147,22 @@
 }
 .sitem {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  flex-direction: column;
+  gap: 8px;
   padding: 12px 0;
   border-bottom: 1px solid var(--border2);
+}
+
+.si-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.si-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 .si-dot {
   width: 8px;

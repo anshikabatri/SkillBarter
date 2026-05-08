@@ -5,10 +5,11 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
 import { RouterLink } from '@angular/router';
+
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],  // ← add RouterLink here
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css'
 })
@@ -29,14 +30,18 @@ export class CalendarComponent implements OnInit {
   statusSuccess = '';
   statusError = '';
   reviewedSessionIds = new Set<number>();
+
   get minScheduledAt(): string {
     const now = new Date();
     now.setSeconds(0, 0);
     const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
     return local.toISOString().slice(0, 16);
   }
+
   get filtered(){return this.sessions.filter(s=>this.tab==='upcoming'?(s.status||'').toLowerCase()==='scheduled':['completed','cancelled'].includes((s.status||'').toLowerCase()));}
-  constructor(private auth:AuthService,private api:ApiService){}
+
+  constructor(private auth:AuthService, private api:ApiService){}
+
   ngOnInit(){
     this.buildCal();
     const u = this.auth.currentUser;
@@ -57,6 +62,7 @@ export class CalendarComponent implements OnInit {
     }
     this.loading = false;
   }
+
   load(id:number){
     this.loading=true;
     forkJoin({
@@ -75,6 +81,7 @@ export class CalendarComponent implements OnInit {
       error: () => this.loading=false
     });
   }
+
   withUser(s:any){
     if (!s) return 'Unknown';
     if (!this.userId) return s?.mentor?.name || s?.learner?.name || 'Unknown';
@@ -141,12 +148,14 @@ export class CalendarComponent implements OnInit {
       }
     });
   }
+
   toggleRequestForm(){
     this.showRequest = !this.showRequest;
     this.requestError = '';
     this.requestSuccess = '';
     if (this.showRequest && this.requestMatches.length === 0) this.loadRequestMatches();
   }
+
   loadRequestMatches(){
     if (!this.userId) return;
     this.loadingRequestData = true;
@@ -170,6 +179,7 @@ export class CalendarComponent implements OnInit {
       }
     });
   }
+
   onMentorChange(){
     this.request.skillId = null;
     this.mentorSkills = [];
@@ -195,6 +205,7 @@ export class CalendarComponent implements OnInit {
       }
     });
   }
+
   submitRequest(){
     this.requestError = '';
     this.requestSuccess = '';
@@ -258,6 +269,21 @@ export class CalendarComponent implements OnInit {
         this.completingSessionId = null;
       }
     });
+  }
+
+  joinCall(session: any) {
+    const sessionId = session.sessionId;
+    const otherUserId = Number(session.mentor?.userId) === Number(this.userId)
+      ? session.learner?.userId
+      : session.mentor?.userId;
+
+    if (otherUserId) {
+      this.api.createNotification(otherUserId, 'Session',
+        `📹 ${this.auth.currentUser?.name} is calling you! Join session #${sessionId}`
+      ).subscribe();
+    }
+
+    window.open(`https://meet.element.io/skillbarter-session-${sessionId}`, '_blank');
   }
 
   buildCal(){const f=new Date(this.cy,this.cm,1),l=new Date(this.cy,this.cm+1,0);const d:any[]=[];for(let i=0;i<f.getDay();i++)d.push({d:'',c:false});for(let x=1;x<=l.getDate();x++)d.push({d:x,c:true});const r=7-(d.length%7);if(r<7)for(let i=1;i<=r;i++)d.push({d:i,c:false});this.days=d;}

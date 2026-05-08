@@ -1,8 +1,9 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
+import { Subscription, interval } from 'rxjs';
 
 @Component({
   selector: 'app-topbar',
@@ -11,11 +12,14 @@ import { ApiService } from '../../services/api.service';
   templateUrl: './topbar.component.html',
   styleUrl: './topbar.component.css'
 })
-export class TopbarComponent implements OnInit {
+export class TopbarComponent implements OnInit, OnDestroy {
   user: any = null;
   showMenu = false; showNotif = false;
   notifications: any[] = []; unreadCount = 0;
   isLightMode = false;
+  incomingCall: any = null;
+  private pollSub?: Subscription;
+
   get userInitial() { return this.user?.name ? this.user.name.charAt(0).toUpperCase() : 'U'; }
 
   constructor(private auth: AuthService, private api: ApiService) {}
@@ -23,10 +27,27 @@ export class TopbarComponent implements OnInit {
   ngOnInit() {
     this.isLightMode = (localStorage.getItem('theme') || 'dark') === 'light';
     document.documentElement.setAttribute('data-theme', this.isLightMode ? 'light' : 'dark');
-    this.auth.currentUser$.subscribe(u => { this.user = u; if (u?.userId) this.loadNotifs(u.userId); });
+    this.auth.currentUser$.subscribe(u => {
+      this.user = u;
+      if (u?.userId) {
+        this.loadNotifs(u.userId);
+        this.startPolling(u.userId);
+      }
+    });
     if (!this.auth.currentUser && this.auth.isLoggedIn) {
       this.auth.resolveAndStoreCurrentUser().subscribe({ next: () => {}, error: () => {} });
     }
+  }
+
+  ngOnDestroy() {
+    this.pollSub?.unsubscribe();
+  }
+
+  startPolling(userId: number) {
+    this.pollSub?.unsubscribe();
+    this.pollSub = interval(5000).subscribe(() => {
+      this.loadNotifs(userId);
+    });
   }
 
   toggleTheme(e: Event) {
@@ -43,19 +64,60 @@ export class TopbarComponent implements OnInit {
         const list = Array.isArray(res) ? res : (res?.data || []);
         this.notifications = list.map((n: any) => ({ ...n, message: n?.message || n?.content }));
         this.unreadCount = this.notifications.filter((n: any) => !n.isRead).length;
+        this.checkIncomingCall();
       },
       error: () => {}
     });
   }
 
+  checkIncomingCall() {
+    const callNotif = this.notifications.find((n: any) =>
+      !n.isRead &&
+      (n.content || n.message || '').includes('is calling you') &&
+      !localStorage.getItem(`call-dismissed-${n.notificationId}`)
+    );
+
+    if (callNotif && !this.incomingCall) {
+      this.incomingCall = callNotif;
+    }
+  }
+
+  acceptCall() {
+    if (!this.incomingCall) return;
+    const content = this.incomingCall.content || this.incomingCall.message || '';
+    const match = content.match(/session #(\d+)/);
+    const sessionId = match ? match[1] : null;
+
+    localStorage.setItem(`call-dismissed-${this.incomingCall.notificationId}`, 'true');
+    this.api.markNotificationRead(this.incomingCall.notificationId).subscribe();
+    this.incomingCall = null;
+
+    if (sessionId) {
+      window.open(`https://meet.element.io/skillbarter-session-${sessionId}`, '_blank');
+    }
+  }
+
+  declineCall() {
+    if (!this.incomingCall) return;
+    localStorage.setItem(`call-dismissed-${this.incomingCall.notificationId}`, 'true');
+    this.api.markNotificationRead(this.incomingCall.notificationId).subscribe();
+    this.incomingCall = null;
+  }
+
   markRead(n: any) {
     if (n.isRead) return;
-    this.api.markNotificationRead(n.notificationId).subscribe({ next: () => { n.isRead = true; this.unreadCount = Math.max(0, this.unreadCount - 1); }, error: () => {} });
+    this.api.markNotificationRead(n.notificationId).subscribe({
+      next: () => { n.isRead = true; this.unreadCount = Math.max(0, this.unreadCount - 1); },
+      error: () => {}
+    });
   }
 
   markAllRead() {
     if (!this.user?.userId) return;
-    this.api.markAllNotificationsRead(this.user.userId).subscribe({ next: () => { this.notifications.forEach(n => n.isRead = true); this.unreadCount = 0; }, error: () => {} });
+    this.api.markAllNotificationsRead(this.user.userId).subscribe({
+      next: () => { this.notifications.forEach(n => n.isRead = true); this.unreadCount = 0; },
+      error: () => {}
+    });
   }
 
   toggleMenu(e: Event) { e.stopPropagation(); this.showMenu = !this.showMenu; this.showNotif = false; }

@@ -232,3 +232,69 @@
   font-size: 12px;
   color: var(--text2);
 }
+.call-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.call-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  min-width: 300px;
+  animation: pulse 1s infinite;
+}
+.call-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  animation: ring 0.5s infinite alternate;
+}
+.call-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.call-msg {
+  font-size: 14px;
+  color: var(--text2);
+  margin-bottom: 24px;
+}
+.call-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+.accept-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.decline-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+@keyframes ring {
+  from { transform: rotate(-15deg); }
+  to { transform: rotate(15deg); }
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+  100% { box-shadow: 0 0 0 20px rgba(16,185,129,0); }
+}
