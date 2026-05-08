@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription, interval } from 'rxjs';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -13,7 +13,7 @@ import { RouterLink } from '@angular/router';
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.css'
 })
-export class CalendarComponent implements OnInit {
+export class CalendarComponent implements OnInit, OnDestroy {
   dns=['Su','Mo','Tu','We','Th','Fr','Sa']; ms=['January','February','March','April','May','June','July','August','September','October','November','December'];
   cm=new Date().getMonth(); cy=new Date().getFullYear(); today=new Date(); days:any[]=[];
   sessions:any[]=[]; tab='upcoming'; loading=true;
@@ -30,6 +30,7 @@ export class CalendarComponent implements OnInit {
   statusSuccess = '';
   statusError = '';
   reviewedSessionIds = new Set<number>();
+  private pollSub?: Subscription;
 
   get minScheduledAt(): string {
     const now = new Date();
@@ -38,16 +39,38 @@ export class CalendarComponent implements OnInit {
     return local.toISOString().slice(0, 16);
   }
 
-  get filtered(){return this.sessions.filter(s=>this.tab==='upcoming'?(s.status||'').toLowerCase()==='scheduled':['completed','cancelled'].includes((s.status||'').toLowerCase()));}
+  isExpired(s: any): boolean {
+    const status = (s.status || '').toLowerCase();
+    const scheduledAt = new Date(s.scheduledAt);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // midnight today
+    const sessionDay = new Date(scheduledAt);
+    sessionDay.setHours(0, 0, 0, 0); // midnight of session day
+    return status === 'scheduled' && sessionDay < today;
+  }
 
-  constructor(private auth:AuthService, private api:ApiService){}
+  get filtered() {
+    return this.sessions.filter(s => {
+      const status = (s.status || '').toLowerCase();
+      const isExp = this.isExpired(s);
 
-  ngOnInit(){
+      if (this.tab === 'upcoming') {
+        return status === 'scheduled' && !isExp;
+      } else {
+        return status === 'completed' || status === 'cancelled' || isExp;
+      }
+    });
+  }
+
+  constructor(private auth: AuthService, private api: ApiService) {}
+
+  ngOnInit() {
     this.buildCal();
     const u = this.auth.currentUser;
     if (u?.userId) {
       this.userId = u.userId;
       this.load(u.userId);
+      this.startPolling(u.userId);
       return;
     }
     if (this.auth.isLoggedIn) {
@@ -55,6 +78,7 @@ export class CalendarComponent implements OnInit {
         next: user => {
           this.userId = user.userId;
           this.load(user.userId);
+          this.startPolling(user.userId);
         },
         error: () => { this.loading = false; }
       });
@@ -63,29 +87,39 @@ export class CalendarComponent implements OnInit {
     this.loading = false;
   }
 
-  load(id:number){
-    this.loading=true;
+  ngOnDestroy() {
+    this.pollSub?.unsubscribe();
+  }
+
+  startPolling(userId: number) {
+    this.pollSub = interval(10000).subscribe(() => {
+      this.load(userId);
+    });
+  }
+
+  load(id: number) {
+    this.loading = true;
     forkJoin({
       learner: this.api.getSessionsByLearner(id),
       mentor: this.api.getSessionsByMentor(id)
     }).subscribe({
       next: ({ learner, mentor }) => {
-        const all = [...(learner||[]), ...(mentor||[])];
+        const all = [...(learner || []), ...(mentor || [])];
         const deduped = all.filter((s, i, arr) => arr.findIndex(x => x.sessionId === s.sessionId) === i);
-        this.sessions = deduped.sort((a:any, b:any) =>
+        this.sessions = deduped.sort((a: any, b: any) =>
           new Date(a?.scheduledAt || 0).getTime() - new Date(b?.scheduledAt || 0).getTime()
         );
         this.loadReviewStates();
         this.loading = false;
       },
-      error: () => this.loading=false
+      error: () => this.loading = false
     });
   }
 
-  withUser(s:any){
+  withUser(s: any) {
     if (!s) return 'Unknown';
     if (!this.userId) return s?.mentor?.name || s?.learner?.name || 'Unknown';
-    return s?.mentor?.userId===this.userId ? (s?.learner?.name || 'Learner') : (s?.mentor?.name || 'Mentor');
+    return s?.mentor?.userId === this.userId ? (s?.learner?.name || 'Learner') : (s?.mentor?.name || 'Mentor');
   }
 
   private isRequester(s: any): boolean {
@@ -135,7 +169,6 @@ export class CalendarComponent implements OnInit {
     }
 
     const reviewText = prompt('Write a short review (optional):', '') || '';
-
     this.statusError = '';
     this.statusSuccess = '';
     this.api.addReview(this.userId, revieweeId, rating, reviewText, sessionId).subscribe({
@@ -149,28 +182,27 @@ export class CalendarComponent implements OnInit {
     });
   }
 
-  toggleRequestForm(){
+  toggleRequestForm() {
     this.showRequest = !this.showRequest;
     this.requestError = '';
     this.requestSuccess = '';
     if (this.showRequest && this.requestMatches.length === 0) this.loadRequestMatches();
   }
 
-  loadRequestMatches(){
+  loadRequestMatches() {
     if (!this.userId) return;
     this.loadingRequestData = true;
     this.api.getMatchesByUser(this.userId).subscribe({
-      next: (matches:any[]) => {
+      next: (matches: any[]) => {
         const meId = Number(this.userId);
-        this.requestMatches = (matches||[])
-          .map((m:any) => {
+        this.requestMatches = (matches || [])
+          .map((m: any) => {
             const user1Id = Number(m?.user1?.userId);
-            const user2Id = Number(m?.user2?.userId);
             const other = user1Id === meId ? m?.user2 : m?.user1;
             return other && Number(other?.userId) !== meId ? other : null;
           })
-          .filter((u:any) => !!u?.userId)
-          .filter((u:any, i:number, arr:any[]) => arr.findIndex(x => Number(x.userId) === Number(u.userId)) === i);
+          .filter((u: any) => !!u?.userId)
+          .filter((u: any, i: number, arr: any[]) => arr.findIndex(x => Number(x.userId) === Number(u.userId)) === i);
         this.loadingRequestData = false;
       },
       error: () => {
@@ -180,23 +212,23 @@ export class CalendarComponent implements OnInit {
     });
   }
 
-  onMentorChange(){
+  onMentorChange() {
     this.request.skillId = null;
     this.mentorSkills = [];
     if (!this.request.mentorId) return;
     this.loadingRequestData = true;
     this.api.getUserSkills(this.request.mentorId).subscribe({
-      next: (skills:any[]) => {
-        this.mentorSkills = (skills||[])
-          .filter((us:any) => !!us?.skill?.skillId)
-          .map((us:any) => ({
+      next: (skills: any[]) => {
+        this.mentorSkills = (skills || [])
+          .filter((us: any) => !!us?.skill?.skillId)
+          .map((us: any) => ({
             skillId: us.skill.skillId,
             name: us.skill.name,
             kind: (us?.isTeach === true || us?.isTeach === 'true' || us?.isTeach === 1 || us?.isTeach === '1')
               ? 'Teach'
               : ((us?.isLearn === true || us?.isLearn === 'true' || us?.isLearn === 1 || us?.isLearn === '1') ? 'Learn' : '')
           }))
-          .filter((s:any, i:number, arr:any[]) => arr.findIndex(x => x.skillId === s.skillId) === i);
+          .filter((s: any, i: number, arr: any[]) => arr.findIndex(x => x.skillId === s.skillId) === i);
         this.loadingRequestData = false;
       },
       error: () => {
@@ -206,7 +238,7 @@ export class CalendarComponent implements OnInit {
     });
   }
 
-  submitRequest(){
+  submitRequest() {
     this.requestError = '';
     this.requestSuccess = '';
     if (!this.userId) { this.requestError = 'Please login again.'; return; }
@@ -217,7 +249,6 @@ export class CalendarComponent implements OnInit {
       this.requestError = 'Please enter a valid session date and time.';
       return;
     }
-
     if (selectedDate.getTime() <= Date.now()) {
       this.requestError = 'Session time is in the past. Please choose a future date and time.';
       return;
@@ -237,14 +268,14 @@ export class CalendarComponent implements OnInit {
         this.mentorSkills = [];
         this.load(this.userId!);
       },
-      error: (e:any) => {
+      error: (e: any) => {
         this.submitting = false;
         this.requestError = e?.error?.message || 'Failed to create session request.';
       }
     });
   }
 
-  markComplete(session: any){
+  markComplete(session: any) {
     this.statusError = '';
     this.statusSuccess = '';
     const id = Number(session?.sessionId);
@@ -257,14 +288,14 @@ export class CalendarComponent implements OnInit {
         this.statusSuccess = 'Session completed. +50 XP awarded.';
         if (this.userId) {
           this.api.getUser(this.userId).subscribe({
-            next: (u:any) => this.auth.setUser(u),
+            next: (u: any) => this.auth.setUser(u),
             error: () => {}
           });
         }
         if (this.userId) this.load(this.userId);
         this.completingSessionId = null;
       },
-      error: (e:any) => {
+      error: (e: any) => {
         this.statusError = e?.error?.message || 'Failed to update session status.';
         this.completingSessionId = null;
       }
@@ -286,8 +317,17 @@ export class CalendarComponent implements OnInit {
     window.open(`https://meet.element.io/skillbarter-session-${sessionId}`, '_blank');
   }
 
-  buildCal(){const f=new Date(this.cy,this.cm,1),l=new Date(this.cy,this.cm+1,0);const d:any[]=[];for(let i=0;i<f.getDay();i++)d.push({d:'',c:false});for(let x=1;x<=l.getDate();x++)d.push({d:x,c:true});const r=7-(d.length%7);if(r<7)for(let i=1;i<=r;i++)d.push({d:i,c:false});this.days=d;}
-  isTd(d:any){return d.c&&d.d===this.today.getDate()&&this.cm===this.today.getMonth()&&this.cy===this.today.getFullYear();}
-  prev(){if(this.cm===0){this.cm=11;this.cy--;}else this.cm--;this.buildCal();}
-  next(){if(this.cm===11){this.cm=0;this.cy++;}else this.cm++;this.buildCal();}
+  buildCal() {
+    const f = new Date(this.cy, this.cm, 1), l = new Date(this.cy, this.cm + 1, 0);
+    const d: any[] = [];
+    for (let i = 0; i < f.getDay(); i++) d.push({ d: '', c: false });
+    for (let x = 1; x <= l.getDate(); x++) d.push({ d: x, c: true });
+    const r = 7 - (d.length % 7);
+    if (r < 7) for (let i = 1; i <= r; i++) d.push({ d: i, c: false });
+    this.days = d;
+  }
+
+  isTd(d: any) { return d.c && d.d === this.today.getDate() && this.cm === this.today.getMonth() && this.cy === this.today.getFullYear(); }
+  prev() { if (this.cm === 0) { this.cm = 11; this.cy--; } else this.cm--; this.buildCal(); }
+  next() { if (this.cm === 11) { this.cm = 0; this.cy++; } else this.cm++; this.buildCal(); }
 }

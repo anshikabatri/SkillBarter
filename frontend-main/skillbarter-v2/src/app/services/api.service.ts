@@ -49,14 +49,15 @@ export class ApiService {
   sendMessage(sessionId: number, senderId: number, content: string): Observable<any> {
     return this.http.post(`${this.base}/messages`, { sessionId, senderId, content });
   }
-createNotification(userId: number, type: string, content: string): Observable<any> {
-  return this.http.post(`${this.base}/notifications`, { userId, type, content });
-}
+
   // ── NOTIFICATIONS ── /api/notifications
   getNotifications(userId: number): Observable<any[]> { return this.http.get(`${this.base}/notifications/user/${userId}`).pipe(map((res: any) => res?.data || res || [])); }
   getUnreadNotifications(userId: number): Observable<any[]> { return this.http.get(`${this.base}/notifications/user/${userId}/unread`).pipe(map((res: any) => res?.data || res || [])); }
   markNotificationRead(id: number): Observable<any> { return this.http.put(`${this.base}/notifications/${id}/read`, {}).pipe(map((res: any) => res?.data || res || {})); }
   markAllNotificationsRead(userId: number): Observable<any> { return this.http.put(`${this.base}/notifications/user/${userId}/read-all`, {}).pipe(map((res: any) => res?.data || res || {})); }
+  createNotification(userId: number, type: string, content: string): Observable<any> {
+    return this.http.post(`${this.base}/notifications`, { userId, type, content });
+  }
 
   // ── REVIEWS ── /api/reviews
   getReviewsByReviewee(id: number): Observable<any[]> {
