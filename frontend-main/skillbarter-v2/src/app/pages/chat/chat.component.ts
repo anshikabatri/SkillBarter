@@ -86,7 +86,10 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   private fetchSessionsWithPreviews(userId: number) {
-    forkJoin({ learner: this.api.getSessionsByLearner(userId), mentor: this.api.getSessionsByMentor(userId) }).subscribe({
+    forkJoin({
+      learner: this.api.getSessionsByLearner(userId),
+      mentor: this.api.getSessionsByMentor(userId)
+    }).subscribe({
       next: ({ learner, mentor }) => {
         const all = [...(learner || []), ...(mentor || [])]
           .filter((session, index, arr) => arr.findIndex(x => x.sessionId === session.sessionId) === index);
@@ -100,21 +103,50 @@ export class ChatComponent implements OnInit, OnDestroy {
         forkJoin(
           all.map(session =>
             this.api.getMessagesBySession(session.sessionId).pipe(
-              map((res: any) => ({ session, messages: (res?.data || res || []).map((m: any) => ({ ...m, sender: m?.sender || {} })) }))
+              map((res: any) => ({
+                session,
+                messages: (res?.data || res || []).map((m: any) => ({ ...m, sender: m?.sender || {} }))
+              }))
             )
           )
         ).subscribe({
           next: (results: any[]) => {
-            this.sessions = results
-              .map(({ session, messages }) => {
-                const lastMessage = messages?.length ? messages[messages.length - 1] : null;
-                return {
+            // Group by other user
+            const userMap = new Map<number, any>();
+
+            results.forEach(({ session, messages }) => {
+              const otherUser = session.mentor?.userId === userId ? session.learner : session.mentor;
+              if (!otherUser?.userId) return;
+
+              const otherId = Number(otherUser.userId);
+              const lastMessage = messages?.length ? messages[messages.length - 1] : null;
+
+              if (!userMap.has(otherId)) {
+                userMap.set(otherId, {
                   ...session,
+                  otherUser,
                   lastMessagePreview: lastMessage?.content || '',
                   lastMessageSenderId: lastMessage?.sender?.userId || null,
-                };
-              })
-              .sort((a: any, b: any) => new Date(b?.scheduledAt || 0).getTime() - new Date(a?.scheduledAt || 0).getTime());
+                  lastMessageAt: lastMessage?.sentAt || null,
+                  allSessionIds: [session.sessionId]
+                });
+              } else {
+                const existing = userMap.get(otherId);
+                existing.allSessionIds.push(session.sessionId);
+                // Keep most recent message
+                if (lastMessage && (!existing.lastMessagePreview ||
+                  new Date(lastMessage.sentAt) > new Date(existing.lastMessageAt || 0))) {
+                  existing.lastMessagePreview = lastMessage.content;
+                  existing.lastMessageSenderId = lastMessage.sender?.userId;
+                  existing.lastMessageAt = lastMessage.sentAt;
+                }
+              }
+            });
+
+            this.sessions = Array.from(userMap.values())
+              .sort((a: any, b: any) =>
+                new Date(b?.scheduledAt || 0).getTime() - new Date(a?.scheduledAt || 0).getTime()
+              );
             this.loadingSessions = false;
           },
           error: () => {
@@ -123,9 +155,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           }
         });
       },
-      error: () => {
-        this.loadingSessions = false;
-      }
+      error: () => { this.loadingSessions = false; }
     });
   }
 
@@ -136,6 +166,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   getOther(s: any): string {
     if (!s) return 'Unknown';
+    if (s.otherUser?.name) return s.otherUser.name;
     if (s.mentor?.userId === this.me?.userId) return s.learner?.name || 'Learner';
     return s.mentor?.name || 'Mentor';
   }
@@ -151,9 +182,20 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.messages = [];
     this.loadingMsgs = true;
     this.markSessionOpened(s?.sessionId);
-    this.api.getMessagesBySession(s.sessionId).subscribe({
-      next: (res: any) => {
-        this.messages = (res?.data || res || []).map((m: any) => ({ ...m, sender: m?.sender || {} }));
+
+    // Load messages from all sessions with this person
+    const sessionIds = s.allSessionIds || [s.sessionId];
+
+    forkJoin(
+      sessionIds.map((id: number) =>
+        this.api.getMessagesBySession(id).pipe(
+          map((res: any) => (res?.data || res || []).map((m: any) => ({ ...m, sender: m?.sender || {} })))
+        )
+      )
+    ).subscribe({
+      next: (allMessages: any[][]) => {
+        this.messages = allMessages.flat()
+          .sort((a: any, b: any) => new Date(a.sentAt || 0).getTime() - new Date(b.sentAt || 0).getTime());
         this.loadingMsgs = false;
         this.scrollToLatestMessage();
       },
@@ -191,6 +233,37 @@ export class ChatComponent implements OnInit, OnDestroy {
       }
     });
   }
+isSameDay(date1: any, date2: any): boolean {
+  if (!date1 || !date2) return false;
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  return d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
+}
+
+getDateLabel(date: any): string {
+  if (!date) return '';
+  const d = new Date(date);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  if (this.isSameDay(d, today)) return 'Today';
+  if (this.isSameDay(d, yesterday)) return 'Yesterday';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+formatTime(date: any): string {
+  if (!date) return '';
+  const d = new Date(date);
+  // Add IST offset if needed
+  return d.toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Kolkata'
+  });
+}
 
   private scrollToLatestMessage() {
     setTimeout(() => {

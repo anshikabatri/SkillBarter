@@ -18,6 +18,10 @@ public class MatchController {
 
     private final MatchService matchService;
 
+    public MatchController(MatchService matchService) {
+        this.matchService = matchService;
+    }
+
     // POST /api/matches
     // Body: { "user1": {"userId": 1}, "user2": {"userId": 2}, "matchScore": 87.50 }
     @PostMapping

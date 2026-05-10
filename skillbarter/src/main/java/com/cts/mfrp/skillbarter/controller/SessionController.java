@@ -1,7 +1,5 @@
 package com.cts.mfrp.skillbarter.controller;
 
-import com.cts.mfrp.skillbarter.model.Session;
-import com.cts.mfrp.skillbarter.model.Session.SessionStatus;
 import com.cts.mfrp.skillbarter.service.SessionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

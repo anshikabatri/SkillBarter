@@ -1,8 +1,6 @@
 package com.cts.mfrp.skillbarter.service;
 
 import com.cts.mfrp.skillbarter.model.Review;
-import com.cts.mfrp.skillbarter.model.Session;
-import com.cts.mfrp.skillbarter.model.Session.SessionStatus;
 import com.cts.mfrp.skillbarter.model.User;
 import com.cts.mfrp.skillbarter.repo.ReviewRepo;
 import com.cts.mfrp.skillbarter.repo.SessionRepo;

@@ -1,6 +1,5 @@
 package com.cts.mfrp.skillbarter.service;
 
-import com.cts.mfrp.skillbarter.model.Session;
 import com.cts.mfrp.skillbarter.model.Transaction;
 import com.cts.mfrp.skillbarter.model.Transaction.TransactionStatus;
 import com.cts.mfrp.skillbarter.model.Transaction.PaymentMethod;

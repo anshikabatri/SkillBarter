@@ -3,7 +3,6 @@ package com.cts.mfrp.skillbarter.util;
 import com.cts.mfrp.skillbarter.model.*;
 import com.cts.mfrp.skillbarter.repo.*;
 import com.cts.mfrp.skillbarter.model.Notification.NotificationType;
-import com.cts.mfrp.skillbarter.model.Session.SessionStatus;
 import com.cts.mfrp.skillbarter.model.Transaction.PaymentMethod;
 import com.cts.mfrp.skillbarter.model.Transaction.TransactionStatus;
 import lombok.RequiredArgsConstructor;

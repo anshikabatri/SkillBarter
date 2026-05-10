@@ -1,7 +1,5 @@
 package com.cts.mfrp.skillbarter.service;
 
-import com.cts.mfrp.skillbarter.model.Session;
-import com.cts.mfrp.skillbarter.model.Session.SessionStatus;
 import com.cts.mfrp.skillbarter.model.Skill;
 import com.cts.mfrp.skillbarter.model.User;
 import com.cts.mfrp.skillbarter.model.Notification;

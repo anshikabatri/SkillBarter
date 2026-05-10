@@ -18,7 +18,7 @@
         <div class="clast" [class.unread-text]="isUnread(s)">{{ s.lastMessagePreview || s.skill?.name || 'Session' }}</div>
       </div>
       <div class="ctime-wrap">
-        <div class="ctime">{{ s.scheduledAt | date:'MMM d' }}</div>
+          <div class="ctime">{{ s.lastMessageAt || s.scheduledAt | date:'MMM d' }}</div>
         <div class="ctime-symbol" *ngIf="isUnread(s)">●</div>
       </div>
     </div>
@@ -29,14 +29,22 @@
       <div class="chav" [style.background]="gc(getOther(selected))">{{ getOther(selected).charAt(0) }}</div>
       <div><h3>{{ getOther(selected) }}</h3><span class="skill-tag">{{ selected.skill?.name }}</span></div>
     </div>
-    <div class="messages" #messagesContainer>
-      <div class="loading" *ngIf="loadingMsgs">Loading messages...</div>
-      <div class="empty-m" *ngIf="!loadingMsgs && messages.length===0">No messages yet. Say hello!</div>
-      <div *ngFor="let m of messages" class="msg" [class.mine]="m.sender?.userId===me?.userId" [class.theirs]="m.sender?.userId!==me?.userId">
-        <div class="bubble">{{ m.content }}</div>
-        <div class="mtime">{{ m.sentAt | date:'h:mm a' }}</div>
+      <div class="messages" #messagesContainer>
+          <div class="loading" *ngIf="loadingMsgs">Loading messages...</div>
+          <div class="empty-m" *ngIf="!loadingMsgs && messages.length===0">No messages yet. Say hello!</div>
+
+          <ng-container *ngFor="let m of messages; let i = index">
+              <!-- Date separator -->
+              <div class="date-separator" *ngIf="i === 0 || !isSameDay(messages[i-1].sentAt, m.sentAt)">
+                  <span>{{ getDateLabel(m.sentAt) }}</span>
+              </div>
+
+              <div class="msg" [class.mine]="m.sender?.userId===me?.userId" [class.theirs]="m.sender?.userId!==me?.userId">
+                  <div class="bubble">{{ m.content }}</div>
+                  <div class="mtime">{{ m.sentAt | date:'h:mm a' }}</div>
+              </div>
+          </ng-container>
       </div>
-    </div>
     <div class="input-row">
       <input type="text" [(ngModel)]="newMsg" class="input mi" placeholder="Write a message..." (keyup.enter)="send()">
       <button class="btn-primary" (click)="send()">Send</button>

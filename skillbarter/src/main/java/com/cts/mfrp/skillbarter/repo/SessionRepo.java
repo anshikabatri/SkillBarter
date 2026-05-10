@@ -1,7 +1,5 @@
 package com.cts.mfrp.skillbarter.repo;
 
-import com.cts.mfrp.skillbarter.model.Session;
-import com.cts.mfrp.skillbarter.model.Session.SessionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
