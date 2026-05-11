@@ -1,6 +1,7 @@
 package com.cts.mfrp.skillbarter.service;
 
 import com.cts.mfrp.skillbarter.model.Review;
+import com.cts.mfrp.skillbarter.model.Session;
 import com.cts.mfrp.skillbarter.model.User;
 import com.cts.mfrp.skillbarter.repo.ReviewRepo;
 import com.cts.mfrp.skillbarter.repo.SessionRepo;
@@ -38,11 +39,10 @@ public class ReviewService {
             Session session = sessionRepo.findById(sessionId)
                     .orElseThrow(() -> new RuntimeException("Session not found with id: " + sessionId));
 
-            if (session.getStatus() != SessionStatus.Completed) {
+            if (session.getStatus() != Session.SessionStatus.Completed) {
                 throw new RuntimeException("Review is allowed only after session completion");
             }
 
-            // requester = learner in current app flow
             Integer requesterId = session.getLearner() != null ? session.getLearner().getUserId() : null;
             Integer otherUserId = session.getMentor() != null ? session.getMentor().getUserId() : null;
 

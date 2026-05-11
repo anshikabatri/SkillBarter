@@ -1,6 +1,6 @@
 package com.cts.mfrp.skillbarter.service;
-
 import com.cts.mfrp.skillbarter.model.Message;
+import com.cts.mfrp.skillbarter.model.Session;
 import com.cts.mfrp.skillbarter.model.User;
 import com.cts.mfrp.skillbarter.repo.MessageRepo;
 import com.cts.mfrp.skillbarter.repo.SessionRepo;
@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
-
 @Service
 public class MessageService {
 

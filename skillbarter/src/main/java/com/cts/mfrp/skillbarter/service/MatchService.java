@@ -27,11 +27,7 @@ public class MatchService {
     private final UserRepo userRepo;
     private final UserSkillRepo userSkillRepo;
 
-    public MatchService(MatchRepo matchRepo, UserRepo userRepo, UserSkillRepo userSkillRepo) {
-        this.matchRepo = matchRepo;
-        this.userRepo = userRepo;
-        this.userSkillRepo = userSkillRepo;
-    }
+
 
     public Match createMatch(Match match) {
         User user1 = userRepo.findById(match.getUser1().getUserId())

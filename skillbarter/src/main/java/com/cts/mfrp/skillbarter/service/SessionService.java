@@ -1,5 +1,6 @@
 package com.cts.mfrp.skillbarter.service;
 
+import com.cts.mfrp.skillbarter.model.Session;
 import com.cts.mfrp.skillbarter.model.Skill;
 import com.cts.mfrp.skillbarter.model.User;
 import com.cts.mfrp.skillbarter.model.Notification;
@@ -41,17 +42,17 @@ public class SessionService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session time is in the past. Please choose a future date and time");
         }
 
-        User mentor  = userRepo.findById(session.getMentor().getUserId())
+        User mentor = userRepo.findById(session.getMentor().getUserId())
                 .orElseThrow(() -> new RuntimeException("Mentor not found"));
         User learner = userRepo.findById(session.getLearner().getUserId())
                 .orElseThrow(() -> new RuntimeException("Learner not found"));
-        Skill skill  = skillRepo.findById(session.getSkill().getSkillId())
+        Skill skill = skillRepo.findById(session.getSkill().getSkillId())
                 .orElseThrow(() -> new RuntimeException("Skill not found"));
 
         session.setMentor(mentor);
         session.setLearner(learner);
         session.setSkill(skill);
-        session.setStatus(SessionStatus.Scheduled);
+        session.setStatus(Session.SessionStatus.Scheduled);
         Session saved = sessionRepo.save(session);
 
         try {
@@ -84,18 +85,17 @@ public class SessionService {
 
     @Transactional(readOnly = true)
     public List<Session> getSessionsByUserAndDateRange(Integer userId,
-                                                        LocalDateTime from,
-                                                        LocalDateTime to) {
+                                                       LocalDateTime from,
+                                                       LocalDateTime to) {
         return sessionRepo.findByUserAndDateRange(userId, from, to);
     }
 
-    public Session updateSessionStatus(Integer id, SessionStatus status) {
+    public Session updateSessionStatus(Integer id, Session.SessionStatus status) {
         Session session = findOrThrow(id);
-        SessionStatus previousStatus = session.getStatus();
+        Session.SessionStatus previousStatus = session.getStatus();
         session.setStatus(status);
 
-        // Award XP only once per session when it first moves to Completed
-        if (status == SessionStatus.Completed && previousStatus != SessionStatus.Completed) {
+        if (status == Session.SessionStatus.Completed && previousStatus != Session.SessionStatus.Completed) {
             User mentor = session.getMentor();
             User learner = session.getLearner();
 

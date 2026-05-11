@@ -10,7 +10,7 @@ import com.cts.mfrp.skillbarter.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.cts.mfrp.skillbarter.model.Session;
 import java.math.BigDecimal;
 import java.util.List;
 

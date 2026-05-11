@@ -121,7 +121,7 @@ public class DummyDataSeeder implements CommandLineRunner {
                 .learner(u2)
                 .skill(s2)
                 .scheduledAt(LocalDateTime.now().plusDays(2))
-                .status(SessionStatus.Scheduled)
+                .status(Session.SessionStatus.Scheduled)
                 .build();
         sessionRepo.save(session1);
 

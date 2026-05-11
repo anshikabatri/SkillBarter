@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import com.cts.mfrp.skillbarter.model.Session;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,23 +12,23 @@ import java.util.List;
 @Repository
 public interface SessionRepo extends JpaRepository<Session, Integer> {
 
-       @Query("SELECT s FROM Session s JOIN FETCH s.mentor JOIN FETCH s.learner JOIN FETCH s.skill WHERE s.mentor.userId = :mentorId ORDER BY s.scheduledAt ASC")
-       List<Session> findByMentor_UserId(@Param("mentorId") Integer mentorId);
+    @Query("SELECT s FROM Session s JOIN FETCH s.mentor JOIN FETCH s.learner JOIN FETCH s.skill WHERE s.mentor.userId = :mentorId ORDER BY s.scheduledAt ASC")
+    List<Session> findByMentor_UserId(@Param("mentorId") Integer mentorId);
 
-       @Query("SELECT s FROM Session s JOIN FETCH s.mentor JOIN FETCH s.learner JOIN FETCH s.skill WHERE s.learner.userId = :learnerId ORDER BY s.scheduledAt ASC")
-       List<Session> findByLearner_UserId(@Param("learnerId") Integer learnerId);
+    @Query("SELECT s FROM Session s JOIN FETCH s.mentor JOIN FETCH s.learner JOIN FETCH s.skill WHERE s.learner.userId = :learnerId ORDER BY s.scheduledAt ASC")
+    List<Session> findByLearner_UserId(@Param("learnerId") Integer learnerId);
 
-    List<Session> findByMentor_UserIdAndStatus(Integer mentorId, SessionStatus status);
+    List<Session> findByMentor_UserIdAndStatus(Integer mentorId, Session.SessionStatus status);
 
-    List<Session> findByLearner_UserIdAndStatus(Integer learnerId, SessionStatus status);
+    List<Session> findByLearner_UserIdAndStatus(Integer learnerId, Session.SessionStatus status);
 
     @Query("SELECT s FROM Session s JOIN FETCH s.mentor JOIN FETCH s.learner JOIN FETCH s.skill WHERE (s.mentor.userId = :userId OR s.learner.userId = :userId) " +
-           "AND s.scheduledAt BETWEEN :from AND :to")
+            "AND s.scheduledAt BETWEEN :from AND :to")
     List<Session> findByUserAndDateRange(@Param("userId") Integer userId,
                                          @Param("from") LocalDateTime from,
                                          @Param("to") LocalDateTime to);
 
     @Query("SELECT s FROM Session s WHERE s.skill.skillId = :skillId AND s.status = :status")
     List<Session> findBySkillAndStatus(@Param("skillId") Integer skillId,
-                                       @Param("status") SessionStatus status);
+                                       @Param("status") Session.SessionStatus status);
 }

@@ -1,5 +1,6 @@
 package com.cts.mfrp.skillbarter.model;
 
+import com.cts.mfrp.skillbarter.model.Session;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
