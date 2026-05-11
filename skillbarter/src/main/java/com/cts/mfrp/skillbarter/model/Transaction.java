@@ -20,14 +20,14 @@ public class Transaction {
     @Column(name = "transaction_id")
     private Integer transactionId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "userSkills", "messages"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "passwordHash", "bio", "profilePhotoUrl", "languagesSpoken", "createdAt"})
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "session_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "mentor", "learner"})
     private Session session;
 
     @NotNull(message = "Amount is required")

@@ -1,12 +1,123 @@
-<div class="subs-page">
-  <h1>SkillBarter+ Subscriptions</h1>
-  <p class="sub">Unlock bonus SP, priority support, and premium features.</p>
-  <div class="plans">
-    <div class="plan card" *ngFor="let p of plans" [class.featured]="p.featured">
-      <h2>{{ p.name }}</h2>
-      <div class="price">₹{{ p.price }}<span>/mo</span></div>
-      <ul><li *ngFor="let f of p.features">{{ f }}</li></ul>
-      <button class="btn-soon" disabled>Coming Soon</button>
+<div class="txn-page">
+    <div class="page-header">
+        <h2>Donations & Tips</h2>
+        <p class="sub">Show appreciation to your mentors by sending a tip after a completed session.</p>
+        <button class="btn-primary" (click)="showForm = !showForm">
+            {{ showForm ? 'Hide Form' : '💝 Tip a Mentor' }}
+        </button>
     </div>
-  </div>
+
+    <div class="card form-card" *ngIf="showForm">
+        <h3>Send a Tip</h3>
+
+        <div class="fg">
+            <label>Select Completed Session *</label>
+            <select [(ngModel)]="form.sessionId" class="input">
+                <option [ngValue]="null">-- Select Session --</option>
+                <option *ngFor="let s of sessions" [ngValue]="s.sessionId">
+                    {{ getSessionLabel(s) }} — {{ s.scheduledAt | date:'MMM d, y' }}
+                </option>
+            </select>
+            <div class="hint" *ngIf="loading">Loading sessions...</div>
+            <div class="hint" *ngIf="!loading && sessions.length === 0">No completed sessions found.</div>
+        </div>
+
+        <div class="fg">
+            <label>Tip Amount (₹) *</label>
+            <input type="number"
+                   [(ngModel)]="form.amount"
+                   class="input"
+                   placeholder="Enter amount (₹10 - ₹5000)"
+                   min="10"
+                   max="5000"
+                   (blur)="validateAmount()">
+            <div class="field-error" *ngIf="amountError">{{ amountError }}</div>
+            <div class="hint">Min: ₹10 | Max: ₹5,000</div>
+        </div>
+
+        <div class="fg">
+            <label>Payment Method *</label>
+            <div class="radio-group">
+                <label class="radio-label">
+                    <input type="radio" [(ngModel)]="form.paymentMethod" value="UPI"> UPI (GPay/PhonePe/Paytm)
+                </label>
+                <label class="radio-label">
+                    <input type="radio" [(ngModel)]="form.paymentMethod" value="Card"> Debit/Credit Card
+                </label>
+                <label class="radio-label">
+                    <input type="radio" [(ngModel)]="form.paymentMethod" value="NetBanking"> Net Banking
+                </label>
+            </div>
+
+            <!-- Show UPI apps when UPI is selected -->
+            <div class="upi-apps" *ngIf="form.paymentMethod === 'UPI'">
+                <label>Select UPI App</label>
+                <div class="upi-group">
+                    <label class="upi-label" [class.selected]="form.upiApp === 'GPay'" (click)="form.upiApp = 'GPay'">
+                        📱 GPay
+                    </label>
+                    <label class="upi-label" [class.selected]="form.upiApp === 'PhonePe'" (click)="form.upiApp = 'PhonePe'">
+                        📱 PhonePe
+                    </label>
+                    <label class="upi-label" [class.selected]="form.upiApp === 'Paytm'" (click)="form.upiApp = 'Paytm'">
+                        📱 Paytm
+                    </label>
+                    <label class="upi-label" [class.selected]="form.upiApp === 'Other'" (click)="form.upiApp = 'Other'">
+                        📱 Other
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="fg">
+            <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="form.agree">
+                I agree that this is a voluntary tip and no refunds will be issued.
+            </label>
+        </div>
+
+        <div class="error-box" *ngIf="error">{{ error }}</div>
+        <div class="success-box" *ngIf="success">{{ success }}</div>
+
+        <div class="form-actions">
+            <button class="btn-primary" (click)="submit()" [disabled]="submitting">
+                {{ submitting ? 'Processing...' : '💝 Send Tip' }}
+            </button>
+            <button class="btn-secondary" (click)="reset()">Reset</button>
+            <button class="btn-ghost" (click)="cancel()">Cancel</button>
+        </div>
+    </div>
+
+    <div class="card txn-card">
+        <h3>Transaction History</h3>
+        <div class="hint" *ngIf="loadingTxn">Loading transactions...</div>
+        <div class="hint" *ngIf="!loadingTxn && transactions.length === 0">No transactions yet.</div>
+        <table class="txn-table" *ngIf="!loadingTxn && transactions.length > 0">
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Session</th>
+                <th>Amount</th>
+                <th>Type</th>
+                <th>Method</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let t of transactions">
+                <td>{{ t.createdAt | date:'MMM d, y' }}</td>
+                <td>{{ t.session?.skill?.name || 'Session #' + t.session?.sessionId }}</td>
+                <td>₹{{ t.amount }}</td>
+                <td>
+        <span class="badge" [class]="t.user?.userId === userId ? 'sent' : 'received'">
+          {{ t.user?.userId === userId ? '↑ Sent' : '↓ Received' }}
+        </span>
+                </td>
+                <td>{{ t.paymentMethod }}</td>
+                <td>
+                    <span class="badge" [class]="(t.status || '').toLowerCase()">{{ t.status }}</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>

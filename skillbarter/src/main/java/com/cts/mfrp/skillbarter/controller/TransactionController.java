@@ -86,4 +86,8 @@ public class TransactionController {
         transactionService.deleteTransaction(id);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/user/{userId}/received")
+    public ResponseEntity<List<Transaction>> getReceivedByUser(@PathVariable Integer userId) {
+        return ResponseEntity.ok(transactionService.getReceivedByUser(userId));
+    }
 }

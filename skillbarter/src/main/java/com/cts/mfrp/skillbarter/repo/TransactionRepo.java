@@ -24,6 +24,7 @@ public interface TransactionRepo extends JpaRepository<Transaction, Integer> {
 
     List<Transaction> findByPaymentMethod(PaymentMethod paymentMethod);
 
+    List<Transaction> findBySession_Mentor_UserId(Integer userId);
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user.userId = :userId AND t.status = 'Success'")
     BigDecimal sumSuccessfulAmountByUser(@Param("userId") Integer userId);
 }

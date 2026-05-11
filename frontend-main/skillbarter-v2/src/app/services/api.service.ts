@@ -87,8 +87,6 @@ deleteUserSkill(userSkillId: number): Observable<any> {
   createCalendarEvent(data: any): Observable<any> { return this.http.post(`${this.base}/calendar`, data); }
 
   // ── TRANSACTIONS ── /api/transactions
-  getTransactionsByUser(userId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/transactions/user/${userId}`); }
-
   // ── AUTH: PASSWORD RESET ── /api/auth
   forgotPassword(email: string): Observable<any> {
     return this.http.post(`${this.base}/auth/forgot-password`, { email });
@@ -103,5 +101,10 @@ sendFile(sessionId: number, senderId: number, file: File): Observable<any> {
   formData.append('sessionId', sessionId.toString());
   formData.append('senderId', senderId.toString());
   return this.http.post(`${this.base}/messages/upload`, formData);
+}
+getTransactionsByUser(userId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/transactions/user/${userId}`); }
+createTransaction(data: any): Observable<any> { return this.http.post(`${this.base}/transactions`, data); }
+getReceivedTransactions(userId: number): Observable<any[]> {
+  return this.http.get<any[]>(`${this.base}/transactions/user/${userId}/received`);
 }
 }

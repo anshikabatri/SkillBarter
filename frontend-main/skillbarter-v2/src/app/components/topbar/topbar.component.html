@@ -73,4 +73,12 @@
             </div>
         </div>
     </div>
+    <!-- Tip Notification Popup -->
+    <div class="tip-popup" *ngIf="incomingTip">
+        <div class="tip-content">
+            <span class="tip-icon">💝</span>
+            <span class="tip-msg">{{ incomingTip.content || incomingTip.message }}</span>
+            <button class="tip-close" (click)="dismissTip()">✕</button>
+        </div>
+    </div>
 </header>

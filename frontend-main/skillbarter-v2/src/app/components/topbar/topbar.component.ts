@@ -14,10 +14,13 @@ import { Subscription, interval } from 'rxjs';
 })
 export class TopbarComponent implements OnInit, OnDestroy {
   user: any = null;
-  showMenu = false; showNotif = false;
-  notifications: any[] = []; unreadCount = 0;
+  showMenu = false;
+  showNotif = false;
+  notifications: any[] = [];
+  unreadCount = 0;
   isLightMode = false;
   incomingCall: any = null;
+  incomingTip: any = null;
   private pollSub?: Subscription;
 
   get userInitial() { return this.user?.name ? this.user.name.charAt(0).toUpperCase() : 'U'; }
@@ -76,10 +79,26 @@ export class TopbarComponent implements OnInit, OnDestroy {
       (n.content || n.message || '').includes('is calling you') &&
       !localStorage.getItem(`call-dismissed-${n.notificationId}`)
     );
-
     if (callNotif && !this.incomingCall) {
       this.incomingCall = callNotif;
     }
+
+    const tipNotif = this.notifications.find((n: any) =>
+      !n.isRead &&
+      (n.content || n.message || '').includes('sent you a tip') &&
+      !localStorage.getItem(`tip-dismissed-${n.notificationId}`)
+    );
+    if (tipNotif && !this.incomingTip) {
+      this.incomingTip = tipNotif;
+      setTimeout(() => { this.dismissTip(); }, 5000);
+    }
+  }
+
+  dismissTip() {
+    if (!this.incomingTip) return;
+    localStorage.setItem(`tip-dismissed-${this.incomingTip.notificationId}`, 'true');
+    this.api.markNotificationRead(this.incomingTip.notificationId).subscribe();
+    this.incomingTip = null;
   }
 
   acceptCall() {
@@ -87,11 +106,9 @@ export class TopbarComponent implements OnInit, OnDestroy {
     const content = this.incomingCall.content || this.incomingCall.message || '';
     const match = content.match(/session #(\d+)/);
     const sessionId = match ? match[1] : null;
-
     localStorage.setItem(`call-dismissed-${this.incomingCall.notificationId}`, 'true');
     this.api.markNotificationRead(this.incomingCall.notificationId).subscribe();
     this.incomingCall = null;
-
     if (sessionId) {
       window.open(`https://meet.element.io/skillbarter-session-${sessionId}`, '_blank');
     }
@@ -115,7 +132,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
   markAllRead() {
     if (!this.user?.userId) return;
     this.api.markAllNotificationsRead(this.user.userId).subscribe({
-      next: () => { this.notifications.forEach(n => n.isRead = true); this.unreadCount = 0; },
+      next: () => { this.notifications.forEach((n: any) => n.isRead = true); this.unreadCount = 0; },
       error: () => {}
     });
   }
@@ -123,5 +140,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
   toggleMenu(e: Event) { e.stopPropagation(); this.showMenu = !this.showMenu; this.showNotif = false; }
   toggleNotif(e: Event) { e.stopPropagation(); this.showNotif = !this.showNotif; this.showMenu = false; }
   logout() { this.auth.logout(); }
-  @HostListener('document:click') closeAll() { this.showMenu = false; this.showNotif = false; }
+
+  @HostListener('document:click')
+  closeAll() { this.showMenu = false; this.showNotif = false; }
 }

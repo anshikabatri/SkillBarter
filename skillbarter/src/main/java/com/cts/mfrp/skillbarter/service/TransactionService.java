@@ -8,11 +8,14 @@ import com.cts.mfrp.skillbarter.repo.SessionRepo;
 import com.cts.mfrp.skillbarter.repo.TransactionRepo;
 import com.cts.mfrp.skillbarter.repo.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.cts.mfrp.skillbarter.model.Session;
 import java.math.BigDecimal;
 import java.util.List;
+import com.cts.mfrp.skillbarter.model.Notification;
+import com.cts.mfrp.skillbarter.service.NotificationService;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +26,8 @@ public class TransactionService {
     private final UserRepo userRepo;
     private final SessionRepo sessionRepo;
 
+    @Autowired
+    private NotificationService notificationService;
     public Transaction createTransaction(Transaction txn) {
         User user = userRepo.findById(txn.getUser().getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -30,8 +35,22 @@ public class TransactionService {
                 .orElseThrow(() -> new RuntimeException("Session not found"));
         txn.setUser(user);
         txn.setSession(session);
-        txn.setStatus(TransactionStatus.Pending);
-        return transactionRepo.save(txn);
+        txn.setStatus(TransactionStatus.Success);
+        Transaction saved = transactionRepo.save(txn);
+
+        // Notify the mentor
+        try {
+            User mentor = session.getMentor();
+            if (mentor != null && !mentor.getUserId().equals(user.getUserId())) {
+                notificationService.createNotification(
+                        mentor.getUserId(),
+                        Notification.NotificationType.Session,
+                        "💝 " + user.getName() + " sent you a tip of ₹" + txn.getAmount() + " for your " + session.getSkill().getName() + " session!"
+                );
+            }
+        } catch (Exception ignored) {}
+
+        return saved;
     }
 
     @Transactional(readOnly = true)
@@ -68,6 +87,10 @@ public class TransactionService {
     public BigDecimal getTotalSuccessfulAmountByUser(Integer userId) {
         BigDecimal total = transactionRepo.sumSuccessfulAmountByUser(userId);
         return total != null ? total : BigDecimal.ZERO;
+    }
+    @Transactional(readOnly = true)
+    public List<Transaction> getReceivedByUser(Integer userId) {
+        return transactionRepo.findBySession_Mentor_UserId(userId);
     }
 
     public Transaction updateStatus(Integer id, TransactionStatus status) {
