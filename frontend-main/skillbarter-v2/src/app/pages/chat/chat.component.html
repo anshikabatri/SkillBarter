@@ -35,15 +35,30 @@
             <div class="empty-m" *ngIf="!loadingMsgs && messages.length===0">No messages yet. Say hello!</div>
             <ng-container *ngFor="let m of messages; let i = index">
                 <div class="date-separator" *ngIf="i === 0 || !isSameDay(messages[i-1].sentAt, m.sentAt)">
+                    <!-- DEBUG -->
                     <span>{{ getDateLabel(m.sentAt) }}</span>
                 </div>
                 <div class="msg" [class.mine]="m.sender?.userId===me?.userId" [class.theirs]="m.sender?.userId!==me?.userId">
-                    <div class="bubble">{{ m.content }}</div>
+                    <div class="bubble">
+                        <img *ngIf="m.fileType==='image' && m.fileUrl"
+                             [src]="getFileUrl(m.fileUrl)"
+                             class="msg-image"
+                             (click)="openImage(m.fileUrl)">
+                        <a *ngIf="m.fileType==='file' && m.fileUrl"
+                           [href]="getFileUrl(m.fileUrl)"
+                           target="_blank"
+                           class="file-link">
+                            {{ m.content }}
+                        </a>
+                        <span *ngIf="!m.fileUrl">{{ m.content }}</span>
+                    </div>
                     <div class="mtime">{{ formatTime(m.sentAt) }}</div>
                 </div>
             </ng-container>
         </div>
         <div class="input-row">
+            <label class="attach-btn" for="fileInput">📎</label>
+            <input type="file" id="fileInput" style="display:none" accept="image/*,.pdf,.doc,.docx" (change)="onFileSelected($event)">
             <input type="text" [(ngModel)]="newMsg" class="input mi" placeholder="Write a message..." (keyup.enter)="send()">
             <button class="btn-primary" (click)="send()">Send</button>
         </div>

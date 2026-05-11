@@ -298,3 +298,32 @@
     display: none;
   }
 }
+.attach-btn {
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 8px;
+  align-self: center;
+}
+
+.msg-image {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: block;
+}
+
+.file-link {
+  color: white !important;
+  text-decoration: none;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  word-break: break-all;
+}
+
+.file-link:hover {
+  text-decoration: underline;
+}

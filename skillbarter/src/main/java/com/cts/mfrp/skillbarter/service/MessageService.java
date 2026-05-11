@@ -59,4 +59,18 @@ public class MessageService {
         }
         messageRepo.deleteById(messageId);
     }
+    public Message sendMessageWithFile(Integer sessionId, Integer senderId, String content, String fileUrl, String fileType) {
+        Session session = sessionRepo.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found with id: " + sessionId));
+        User sender = userRepo.findById(senderId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + senderId));
+
+        Message message = new Message();
+        message.setSession(session);
+        message.setSender(sender);
+        message.setContent(content);
+        message.setFileUrl(fileUrl);
+        message.setFileType(fileType);
+        return messageRepo.save(message);
+    }
 }

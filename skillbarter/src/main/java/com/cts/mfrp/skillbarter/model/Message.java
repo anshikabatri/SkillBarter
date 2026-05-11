@@ -1,6 +1,5 @@
 package com.cts.mfrp.skillbarter.model;
 
-import com.cts.mfrp.skillbarter.model.Session;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -27,6 +26,12 @@ public class Message {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "file_url")
+    private String fileUrl;
+
+    @Column(name = "file_type")
+    private String fileType;
+
     @Column(name = "sent_at", updatable = false)
     private LocalDateTime sentAt;
 
@@ -36,14 +41,6 @@ public class Message {
     }
 
     public Message() {}
-
-    public Message(Integer messageId, Session session, User sender, String content, LocalDateTime sentAt) {
-        this.messageId = messageId;
-        this.session = session;
-        this.sender = sender;
-        this.content = content;
-        this.sentAt = sentAt;
-    }
 
     public Integer getMessageId() { return messageId; }
     public void setMessageId(Integer messageId) { this.messageId = messageId; }
@@ -56,6 +53,12 @@ public class Message {
 
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
+
+    public String getFileUrl() { return fileUrl; }
+    public void setFileUrl(String fileUrl) { this.fileUrl = fileUrl; }
+
+    public String getFileType() { return fileType; }
+    public void setFileType(String fileType) { this.fileType = fileType; }
 
     public LocalDateTime getSentAt() { return sentAt; }
     public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }

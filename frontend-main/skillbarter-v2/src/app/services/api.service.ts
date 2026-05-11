@@ -97,4 +97,11 @@ deleteUserSkill(userSkillId: number): Observable<any> {
   resetPassword(token: string, newPassword: string): Observable<any> {
     return this.http.post(`${this.base}/auth/reset-password`, { token, newPassword });
   }
+sendFile(sessionId: number, senderId: number, file: File): Observable<any> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('sessionId', sessionId.toString());
+  formData.append('senderId', senderId.toString());
+  return this.http.post(`${this.base}/messages/upload`, formData);
+}
 }

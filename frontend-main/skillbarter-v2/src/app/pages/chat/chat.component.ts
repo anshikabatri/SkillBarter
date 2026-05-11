@@ -5,6 +5,7 @@ import { forkJoin, interval, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-chat',
@@ -188,9 +189,12 @@ export class ChatComponent implements OnInit, OnDestroy {
         )
       )
     ).pipe(
-      map((allMessages: any[]) => (allMessages as any[][]).flat()
-        .sort((a: any, b: any) => new Date(a.sentAt || 0).getTime() - new Date(b.sentAt || 0).getTime())
-      )
+      map((res: any) => (res?.data || res || []).map((m: any) => ({
+        ...m,
+        sender: m?.sender || {},
+        fileUrl: m?.fileUrl || null,
+        fileType: m?.fileType || null
+      })) as any[])
     ).subscribe({
       next: (messages: any[]) => {
         this.messages = messages;
@@ -201,17 +205,32 @@ export class ChatComponent implements OnInit, OnDestroy {
     });
   }
 
-  refreshMessagesSilently(sessionId: number) {
-    this.api.getMessagesBySession(sessionId).subscribe({
-      next: (res: any) => {
-        const incoming = (res?.data || res || []).map((m: any) => ({ ...m, sender: m?.sender || {} }));
-        const currentLen = this.messages.length;
-        this.messages = incoming;
-        if (incoming.length > currentLen) this.scrollToLatestMessage();
-      },
-      error: () => {}
-    });
-  }
+ refreshMessagesSilently(sessionId: number) {
+   if (!this.selected) return;
+   const sessionIds: number[] = this.selected.allSessionIds || [sessionId];
+
+   forkJoin(
+     sessionIds.map((id: number) =>
+       this.api.getMessagesBySession(id).pipe(
+         map((res: any) => (res?.data || res || []).map((m: any) => ({
+           ...m,
+           sender: m?.sender || {}
+         })) as any[])
+       )
+     )
+   ).pipe(
+     map((allMessages: any[]) => (allMessages as any[][]).flat()
+       .sort((a: any, b: any) => new Date(a.sentAt || 0).getTime() - new Date(b.sentAt || 0).getTime())
+     )
+   ).subscribe({
+     next: (messages: any[]) => {
+       const currentLen = this.messages.length;
+       this.messages = messages;
+       if (messages.length > currentLen) this.scrollToLatestMessage();
+     },
+     error: () => {}
+   });
+ }
 
   send() {
     if (!this.newMsg.trim() || !this.selected) return;
@@ -229,6 +248,30 @@ export class ChatComponent implements OnInit, OnDestroy {
       }
     });
   }
+onFileSelected(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input?.files?.[0];
+  if (!file || !this.selected) return;
+
+  this.api.sendFile(this.selected.sessionId, this.me.userId, file).subscribe({
+    next: (res: any) => {
+      const msg = res?.data || res;
+      this.messages.push({ ...msg, sender: this.me });
+      this.scrollToLatestMessage();
+    },
+    error: () => {}
+  });
+}
+
+getFileUrl(fileUrl: string): string {
+  if (!fileUrl) return '';
+  if (fileUrl.startsWith('http')) return fileUrl;
+  return `${environment.apiUrl.replace('/api', '')}${fileUrl}`;
+}
+
+openImage(fileUrl: string) {
+  window.open(this.getFileUrl(fileUrl), '_blank');
+}
 
   isSameDay(date1: any, date2: any): boolean {
     if (!date1 || !date2) return false;
