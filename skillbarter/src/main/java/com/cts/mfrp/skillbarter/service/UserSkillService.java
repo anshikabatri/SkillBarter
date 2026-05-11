@@ -16,4 +16,7 @@ public class UserSkillService {
     public List<UserSkill> getUserProfileSkills(Integer userId) {
         return userSkillRepo.findByUserId(userId);
     }
+    public void deleteUserSkill(Integer userSkillId) {
+        userSkillRepo.deleteById(userSkillId);
+    }
 }

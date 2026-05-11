@@ -47,4 +47,9 @@ public class SkillController {
     public ResponseEntity<List<UserSkill>> getUserSkills(@PathVariable Integer userId) {
         return ResponseEntity.ok(userSkillService.getUserProfileSkills(userId));
     }
+    @DeleteMapping("/user-skills/{userSkillId}")
+    public ResponseEntity<Void> deleteUserSkill(@PathVariable Integer userSkillId) {
+        userSkillService.deleteUserSkill(userSkillId);
+        return ResponseEntity.noContent().build();
+    }
 }

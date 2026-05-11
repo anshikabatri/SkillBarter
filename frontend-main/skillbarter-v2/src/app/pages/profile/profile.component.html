@@ -34,7 +34,10 @@
                 <div class="skills-col">
                     <label>Skills I Have (Teach)</label>
                     <div class="tags">
-                        <span class="tag" *ngFor="let s of teachSkills">{{ s.skill?.name || s.name }}</span>
+            <span class="tag" *ngFor="let s of teachSkills">
+              {{ s.skill?.name || s.name }}
+              <button class="tag-remove" (click)="removeSkill(s)">✕</button>
+            </span>
                         <span class="empty-sm" *ngIf="teachSkills.length===0">No skills added yet.</span>
                     </div>
                     <div class="add-row">
@@ -49,7 +52,10 @@
                 <div class="skills-col">
                     <label>Skills I Need to Learn</label>
                     <div class="tags">
-                        <span class="tag learn" *ngFor="let s of learnSkills">{{ s.skill?.name || s.name }}</span>
+            <span class="tag learn" *ngFor="let s of learnSkills">
+              {{ s.skill?.name || s.name }}
+              <button class="tag-remove" (click)="removeSkill(s)">✕</button>
+            </span>
                         <span class="empty-sm" *ngIf="learnSkills.length===0">No skills added yet.</span>
                     </div>
                     <div class="add-row">

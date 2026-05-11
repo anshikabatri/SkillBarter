@@ -51,7 +51,8 @@
                         <div class="si-with">with {{ withUser(s) }}</div>
                     </div>
                 </div>
-                <span class="sbadge" [class]="(s.status||'').toLowerCase()">{{ s.status }}</span>
+                <span class="sbadge expired" *ngIf="isExpired(s)">Expired</span>
+                <span class="sbadge" [class]="(s.status||'').toLowerCase()" *ngIf="!isExpired(s)">{{ s.status }}</span>
             </div>
             <div class="si-actions">
                 <button class="video-btn"

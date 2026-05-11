@@ -73,6 +73,9 @@ export class ApiService {
     return this.http.get(`${this.base}/reviews/session/${sessionId}/reviewer/${reviewerId}/exists`)
       .pipe(map((res: any) => !!(res?.data ?? res ?? false)));
   }
+deleteUserSkill(userSkillId: number): Observable<any> {
+  return this.http.delete(`${this.base}/user-skills/${userSkillId}`);
+}
 
   // ── STORIES ── /api/stories
   getAllStories(): Observable<any[]> { return this.http.get<any[]>(`${this.base}/stories`); }

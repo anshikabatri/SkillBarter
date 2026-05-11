@@ -25,8 +25,6 @@ export class ProfileComponent implements OnInit {
   photoUpdatedAt = '';
   teachSkills: any[] = [];
   learnSkills: any[] = [];
-  newTeachSkill = '';
-  newLearnSkill = '';
   addingSkill = false;
   allSkills: any[] = [];
   selectedTeachSkillId: number | null = null;
@@ -85,30 +83,11 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  addSkill(isTeach: boolean) {
-    if (!this.user?.userId) return;
-    const name = (isTeach ? this.newTeachSkill : this.newLearnSkill).trim();
-    if (!name) return;
-    this.error = '';
-    this.addingSkill = true;
-    this.api.searchSkills(name).subscribe({
-      next: (skills: any[]) => {
-        const found = (skills || []).find((s: any) => (s?.name || '').toLowerCase() === name.toLowerCase()) || (skills || [])[0];
-        if (!found?.skillId) {
-          this.error = 'Skill not found. Please use an existing skill name.';
-          this.addingSkill = false;
-          return;
-        }
-        this.api.addUserSkill({ userId: this.user.userId, skill: { skillId: found.skillId }, isTeach: isTeach, isLearn: !isTeach }).subscribe({
-          next: () => {
-            if (isTeach) this.newTeachSkill = ''; else this.newLearnSkill = '';
-            this.addingSkill = false;
-            this.loadSkills();
-          },
-          error: () => { this.error = 'Failed to add skill.'; this.addingSkill = false; }
-        });
-      },
-      error: () => { this.error = 'Skill search failed.'; this.addingSkill = false; }
+  removeSkill(userSkill: any) {
+    if (!confirm('Remove this skill?')) return;
+    this.api.deleteUserSkill(userSkill.userSkillId).subscribe({
+      next: () => { this.loadSkills(); },
+      error: () => { this.error = 'Failed to remove skill.'; }
     });
   }
 
