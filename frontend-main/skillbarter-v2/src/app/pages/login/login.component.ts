@@ -33,4 +33,7 @@ export class LoginComponent {
       error: (e) => { this.error = e?.error?.message || 'Invalid email or password.'; this.loading = false; }
     });
   }
+clearSession() {
+  localStorage.clear();
+}
 }
