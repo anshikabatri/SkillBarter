@@ -271,3 +271,39 @@
   font-size: 11px;
   color: var(--text2);
 }
+@media (max-width: 768px) {
+  .dash {
+    flex-direction: column;
+  }
+
+  .cal-card {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .mrow {
+    gap: 8px;
+  }
+
+  .mc {
+    min-width: 110px;
+  }
+
+  .stats {
+    gap: 12px;
+  }
+}
+@media (max-width: 768px) {
+  .dash {
+    flex-direction: column;
+  }
+
+  .cal-card {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
+  .left {
+    width: 100%;
+  }
+}

@@ -299,3 +299,10 @@ select {
     grid-template-columns: 1fr;
   }
 }
+@media (max-width: 768px) {
+  .page-content {
+    padding: 12px;
+    overflow-x: hidden;
+    width: 100%;
+  }
+}

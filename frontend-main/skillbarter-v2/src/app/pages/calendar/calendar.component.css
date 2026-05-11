@@ -258,3 +258,41 @@
   white-space: nowrap;
   text-decoration: none;
 }
+@media (max-width: 768px) {
+  .cal-page {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .cal-card {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .sess-card {
+    width: 100% !important;
+  }
+
+  .cg {
+    gap: 2px;
+  }
+
+  .cd {
+    padding: 6px 1px;
+    font-size: 12px;
+  }
+
+  .dn {
+    font-size: 10px;
+  }
+
+  .si-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .video-btn, .ack-btn, .rate-btn {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+}

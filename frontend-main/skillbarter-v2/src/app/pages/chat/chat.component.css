@@ -250,3 +250,51 @@
   border-radius: 20px;
   border: 1px solid var(--border2);
 }
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 8px;
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .chat-page {
+    flex-direction: column;
+    height: calc(100vh - 130px);
+  }
+
+  .contacts {
+    width: 100%;
+    min-width: unset;
+    height: auto;
+    max-height: none;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .hidden-mobile {
+    display: none;
+  }
+
+  .chat-win {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 65px;
+    height: auto;
+    z-index: 50;
+    background: var(--bg2);
+  }
+
+  .back-btn {
+    display: block;
+  }
+
+  .no-chat {
+    display: none;
+  }
+}

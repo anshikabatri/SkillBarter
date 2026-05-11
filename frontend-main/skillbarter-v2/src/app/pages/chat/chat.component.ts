@@ -71,10 +71,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   loadSessions() {
     const id = this.me?.userId;
-    if (!id) {
-      this.loadingSessions = false;
-      return;
-    }
+    if (!id) { this.loadingSessions = false; return; }
     this.loadingSessions = true;
     this.fetchSessionsWithPreviews(id);
   }
@@ -111,7 +108,6 @@ export class ChatComponent implements OnInit, OnDestroy {
           )
         ).subscribe({
           next: (results: any[]) => {
-            // Group by other user
             const userMap = new Map<number, any>();
 
             results.forEach(({ session, messages }) => {
@@ -133,7 +129,6 @@ export class ChatComponent implements OnInit, OnDestroy {
               } else {
                 const existing = userMap.get(otherId);
                 existing.allSessionIds.push(session.sessionId);
-                // Keep most recent message
                 if (lastMessage && (!existing.lastMessagePreview ||
                   new Date(lastMessage.sentAt) > new Date(existing.lastMessageAt || 0))) {
                   existing.lastMessagePreview = lastMessage.content;
@@ -145,7 +140,8 @@ export class ChatComponent implements OnInit, OnDestroy {
 
             this.sessions = Array.from(userMap.values())
               .sort((a: any, b: any) =>
-                new Date(b?.scheduledAt || 0).getTime() - new Date(a?.scheduledAt || 0).getTime()
+                new Date(b?.lastMessageAt || b?.scheduledAt || 0).getTime() -
+                new Date(a?.lastMessageAt || a?.scheduledAt || 0).getTime()
               );
             this.loadingSessions = false;
           },
@@ -211,9 +207,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         const incoming = (res?.data || res || []).map((m: any) => ({ ...m, sender: m?.sender || {} }));
         const currentLen = this.messages.length;
         this.messages = incoming;
-        if (incoming.length > currentLen) {
-          this.scrollToLatestMessage();
-        }
+        if (incoming.length > currentLen) this.scrollToLatestMessage();
       },
       error: () => {}
     });
@@ -235,34 +229,45 @@ export class ChatComponent implements OnInit, OnDestroy {
       }
     });
   }
-isSameDay(date1: any, date2: any): boolean {
-  if (!date1 || !date2) return false;
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
-  return d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate();
-}
 
-getDateLabel(date: any): string {
-  if (!date) return '';
-  const d = new Date(date);
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
+  isSameDay(date1: any, date2: any): boolean {
+    if (!date1 || !date2) return false;
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    return d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate();
+  }
 
-  if (this.isSameDay(d, today)) return 'Today';
-  if (this.isSameDay(d, yesterday)) return 'Yesterday';
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
+  getDateLabel(date: any): string {
+    if (!date) return '';
+    const d = new Date(date);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    if (this.isSameDay(d, today)) return 'Today';
+    if (this.isSameDay(d, yesterday)) return 'Yesterday';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
 
+  formatTime(date: any): string {
+    if (!date) return '';
+    return new Date(date).toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Kolkata'
+    });
+  }
+
+  isMobile(): boolean {
+    return window.innerWidth <= 768;
+  }
 
   private scrollToLatestMessage() {
     setTimeout(() => {
       const container = this.messagesContainer?.nativeElement;
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
+      if (container) container.scrollTop = container.scrollHeight;
     }, 0);
   }
 

@@ -250,3 +250,29 @@
   font-size: 12px;
   color: var(--text2);
 }
+@media (max-width: 768px) {
+  .prog-page {
+    max-width: 100%;
+  }
+
+  .body {
+    flex-direction: column;
+  }
+
+  .right-panel {
+    width: 100% !important;
+  }
+
+  .act-card {
+    width: 100%;
+  }
+
+  .level-bar {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .lb-right {
+    text-align: left;
+  }
+}
