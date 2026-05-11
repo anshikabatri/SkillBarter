@@ -167,3 +167,135 @@ select {
   overflow-y: auto;
   height: calc(100vh - var(--topbar));
 }
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  :root {
+    --sidebar: 0px;
+  }
+
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    flex-direction: row;
+    padding: 10px;
+    overflow-x: auto;
+  }
+
+  .brand {
+    display: none;
+  }
+
+  nav {
+    flex-direction: row;
+    gap: 4px;
+    padding: 0;
+  }
+
+  .nav-item {
+    font-size: 12px;
+    padding: 8px 10px;
+    white-space: nowrap;
+  }
+
+  .main {
+    margin-left: 0;
+  }
+
+  .page-content {
+    padding: 12px;
+  }
+
+  /* Topbar */
+  .topbar {
+    left: 0;
+    padding: 0 12px;
+  }
+
+  .user-name {
+    display: none;
+  }
+
+  .sp-value {
+    font-size: 12px;
+  }
+
+  /* Cards */
+  .card {
+    padding: 14px;
+  }
+
+  /* Calendar */
+  .cal-page {
+    flex-direction: column;
+  }
+
+  .sess-card {
+    width: 100% !important;
+  }
+
+  /* Chat */
+  .chat-page {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .contacts {
+    width: 100%;
+    min-width: unset;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .chat-win {
+    height: 60vh;
+  }
+
+  /* Matches */
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  /* Profile */
+  .profile-card {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .skills-wrap {
+    grid-template-columns: 1fr;
+  }
+
+  /* Progress */
+  .body {
+    flex-direction: column;
+  }
+
+  .right-panel {
+    width: 100%;
+  }
+
+  .level-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  /* Community */
+  .stories-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contrib-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Subscriptions */
+  .plans {
+    grid-template-columns: 1fr;
+  }
+}
