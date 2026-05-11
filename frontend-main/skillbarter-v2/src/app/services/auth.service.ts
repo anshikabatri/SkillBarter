@@ -43,7 +43,16 @@ export class AuthService {
   private loadUser(): User | null {
     try {
       const raw = JSON.parse(localStorage.getItem('user') || 'null');
-      return raw ? this.normalizeUser(raw) : null;
+      if (!raw) return null;
+      // If there is a token/email in storage but it doesn't match the stored user,
+      // treat as not logged-in user to avoid showing another user's data briefly.
+      const tokenEmail = this.decodeEmailFromToken(localStorage.getItem('token')) || localStorage.getItem('userEmail');
+      if (tokenEmail && raw.email && String(raw.email).toLowerCase() !== String(tokenEmail).toLowerCase()) {
+        // Clear stale stored user to prevent showing wrong user on first load
+        try { localStorage.removeItem('user'); } catch {}
+        return null;
+      }
+      return this.normalizeUser(raw);
     } catch {
       return null;
     }

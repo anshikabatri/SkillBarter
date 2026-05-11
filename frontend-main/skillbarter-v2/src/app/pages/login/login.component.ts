@@ -13,11 +13,17 @@ import { AuthService } from '../../services/auth.service';
 })
 export class LoginComponent {
   email = ''; password = ''; loading = false; error = '';
+  private readonly emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   constructor(private auth: AuthService, private router: Router) {}
   login() {
-    if (!this.email || !this.password) { this.error = 'Please fill in all fields.'; return; }
+    const email = (this.email || '').trim();
+    const password = this.password || '';
+    if (!email || !password) { this.error = 'Please fill in all fields.'; return; }
+    if (!this.emailRegex.test(email)) { this.error = 'Please enter a valid email address.'; return; }
+    if (password.length < 6) { this.error = 'Password must be at least 6 characters.'; return; }
+    this.email = email;
     this.loading = true; this.error = '';
-    this.auth.login(this.email, this.password).subscribe({
+    this.auth.login(email, password).subscribe({
       next: () => {
         this.auth.resolveAndStoreCurrentUser().subscribe({
           next: () => {
@@ -33,7 +39,7 @@ export class LoginComponent {
       error: (e) => { this.error = e?.error?.message || 'Invalid email or password.'; this.loading = false; }
     });
   }
-clearSession() {
-  localStorage.clear();
-}
+  clearSession() {
+    localStorage.clear();
+  }
 }

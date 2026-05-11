@@ -22,6 +22,8 @@ export class SignupComponent {
   skillsLoading = false;
   langs = ['English','Hindi','Tamil','Telugu','Kannada','Spanish','French','German','Arabic','Chinese','Japanese'];
   loading = false; error = '';
+  private readonly emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  private readonly nameRegex = /^[A-Za-z][A-Za-z\s.'-]{1,79}$/;
   constructor(private auth: AuthService, private api: ApiService, private router: Router) {
     this.loadSkills();
   }
@@ -57,13 +59,23 @@ export class SignupComponent {
   }
 
   signup() {
-    if (!this.name || !this.email || !this.password) { this.error = 'Please fill all fields.'; return; }
-    if (this.password !== this.confirmPassword) { this.error = 'Passwords do not match.'; return; }
-    if (this.password.length < 6) { this.error = 'Password must be at least 6 characters.'; return; }
+    const name = (this.name || '').trim();
+    const email = (this.email || '').trim().toLowerCase();
+    const password = this.password || '';
+    const confirmPassword = this.confirmPassword || '';
+
+    if (!name || !email || !password || !confirmPassword) { this.error = 'Please fill all fields.'; return; }
+    if (!this.nameRegex.test(name)) { this.error = 'Please enter a valid full name.'; return; }
+    if (!this.emailRegex.test(email)) { this.error = 'Please enter a valid email address.'; return; }
+    if (password.length < 6 || password.length > 128) { this.error = 'Password must be 6 to 128 characters.'; return; }
+    if (password !== confirmPassword) { this.error = 'Passwords do not match.'; return; }
+
+    this.name = name;
+    this.email = email;
     this.loading = true; this.error = '';
-    this.auth.register(this.name, this.email, this.password).subscribe({
+    this.auth.register(name, email, password).subscribe({
       next: () => {
-        this.auth.login(this.email, this.password).subscribe({
+        this.auth.login(email, password).subscribe({
           next: () => {
             this.auth.resolveAndStoreCurrentUser().subscribe({
               next: (user) => {
@@ -101,5 +113,21 @@ export class SignupComponent {
       },
       error: (e) => { this.error = e?.error?.message || 'Registration failed. Email may exist.'; this.loading = false; }
     });
+  }
+
+  resetForm() {
+    this.name = '';
+    this.email = '';
+    this.password = '';
+    this.confirmPassword = '';
+    this.languages = [];
+    this.teachSkillIds = [];
+    this.learnSkillIds = [];
+    this.error = '';
+  }
+
+  cancelForm() {
+    this.resetForm();
+    this.router.navigate(['/login']);
   }
 }

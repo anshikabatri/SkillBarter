@@ -32,6 +32,8 @@ export class SubscriptionsComponent implements OnInit {
   };
 
   amountError = '';
+  private readonly validPaymentMethods = new Set(['UPI', 'Card', 'NetBanking']);
+  private readonly validUpiApps = new Set(['GPay', 'PhonePe', 'Paytm', 'Other']);
 
   constructor(private auth: AuthService, private api: ApiService) {}
 
@@ -85,7 +87,7 @@ export class SubscriptionsComponent implements OnInit {
 
   validateAmount(): boolean {
     const amt = parseFloat(this.form.amount);
-    if (!this.form.amount) { this.amountError = 'Amount is required'; return false; }
+    if (!String(this.form.amount || '').trim()) { this.amountError = 'Amount is required'; return false; }
     if (isNaN(amt)) { this.amountError = 'Amount must be a number'; return false; }
     if (amt < 10) { this.amountError = 'Minimum amount is ₹10'; return false; }
     if (amt > 5000) { this.amountError = 'Maximum amount is ₹5000'; return false; }
@@ -97,8 +99,16 @@ export class SubscriptionsComponent implements OnInit {
     this.error = '';
     this.success = '';
     if (!this.form.sessionId) { this.error = 'Please select a session'; return; }
+    if (!this.sessions.some(s => Number(s.sessionId) === Number(this.form.sessionId))) {
+      this.error = 'Selected session is invalid.';
+      return;
+    }
     if (!this.validateAmount()) return;
-    if (!this.form.paymentMethod) { this.error = 'Please select a payment method'; return; }
+    if (!this.validPaymentMethods.has(this.form.paymentMethod)) { this.error = 'Please select a valid payment method'; return; }
+    if (this.form.paymentMethod === 'UPI' && !this.validUpiApps.has(this.form.upiApp)) {
+      this.error = 'Please select a UPI app.';
+      return;
+    }
     if (!this.form.agree) { this.error = 'Please agree to the terms'; return; }
 
     this.submitting = true;

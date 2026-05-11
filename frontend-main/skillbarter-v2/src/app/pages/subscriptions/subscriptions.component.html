@@ -12,7 +12,7 @@
 
         <div class="fg">
             <label>Select Completed Session *</label>
-            <select [(ngModel)]="form.sessionId" class="input">
+            <select [(ngModel)]="form.sessionId" class="input" required>
                 <option [ngValue]="null">-- Select Session --</option>
                 <option *ngFor="let s of sessions" [ngValue]="s.sessionId">
                     {{ getSessionLabel(s) }} — {{ s.scheduledAt | date:'MMM d, y' }}
@@ -30,6 +30,8 @@
                    placeholder="Enter amount (₹10 - ₹5000)"
                    min="10"
                    max="5000"
+                     step="0.01"
+                     required
                    (blur)="validateAmount()">
             <div class="field-error" *ngIf="amountError">{{ amountError }}</div>
             <div class="hint">Min: ₹10 | Max: ₹5,000</div>
@@ -39,13 +41,13 @@
             <label>Payment Method *</label>
             <div class="radio-group">
                 <label class="radio-label">
-                    <input type="radio" [(ngModel)]="form.paymentMethod" value="UPI"> UPI (GPay/PhonePe/Paytm)
+                    <input type="radio" [(ngModel)]="form.paymentMethod" value="UPI" required> UPI (GPay/PhonePe/Paytm)
                 </label>
                 <label class="radio-label">
-                    <input type="radio" [(ngModel)]="form.paymentMethod" value="Card"> Debit/Credit Card
+                    <input type="radio" [(ngModel)]="form.paymentMethod" value="Card" required> Debit/Credit Card
                 </label>
                 <label class="radio-label">
-                    <input type="radio" [(ngModel)]="form.paymentMethod" value="NetBanking"> Net Banking
+                    <input type="radio" [(ngModel)]="form.paymentMethod" value="NetBanking" required> Net Banking
                 </label>
             </div>
 
@@ -70,7 +72,7 @@
         </div>
         <div class="fg">
             <label class="checkbox-label">
-                <input type="checkbox" [(ngModel)]="form.agree">
+                <input type="checkbox" [(ngModel)]="form.agree" required>
                 I agree that this is a voluntary tip and no refunds will be issued.
             </label>
         </div>
@@ -79,7 +81,7 @@
         <div class="success-box" *ngIf="success">{{ success }}</div>
 
         <div class="form-actions">
-            <button class="btn-primary" (click)="submit()" [disabled]="submitting">
+            <button class="btn-primary" (click)="submit()" [disabled]="submitting || !form.sessionId || !form.amount || !form.paymentMethod || !form.agree || (form.paymentMethod === 'UPI' && !form.upiApp)">
                 {{ submitting ? 'Processing...' : '💝 Send Tip' }}
             </button>
             <button class="btn-secondary" (click)="reset()">Reset</button>

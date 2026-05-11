@@ -2,9 +2,14 @@
   <div class="comm-header"><h1>Community</h1><button class="btn-primary" (click)="showForm=!showForm">{{ showForm?'Cancel':'Share Your Story' }}</button></div>
   <div class="story-form card" *ngIf="showForm">
     <h3>Share Your Story</h3>
-    <input [(ngModel)]="newStory.title" class="input" placeholder="Title (e.g. Swapped Python for Guitar lessons)">
-    <textarea [(ngModel)]="newStory.content" class="input ta" placeholder="Tell your story..." rows="4"></textarea>
-    <button class="btn-primary" (click)="submitStory()" [disabled]="posting">{{ posting?'Posting...':'Post Story' }}</button>
+    <input [(ngModel)]="newStory.title" class="input" placeholder="Title (e.g. Swapped Python for Guitar lessons)" required minlength="5" maxlength="120">
+    <textarea [(ngModel)]="newStory.content" class="input ta" placeholder="Tell your story..." rows="4" required minlength="20" maxlength="2000"></textarea>
+    <div class="empty" *ngIf="error">{{ error }}</div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn-primary" (click)="submitStory()" [disabled]="posting || !newStory.title.trim() || !newStory.content.trim()">{{ posting?'Posting...':'Post Story' }}</button>
+      <button class="btn-secondary" (click)="resetForm()" [disabled]="posting">Reset</button>
+      <button class="btn-ghost" (click)="cancelForm()" [disabled]="posting">Cancel</button>
+    </div>
   </div>
   <div class="loading" *ngIf="loading">Loading stories...</div>
   <div class="stories-grid" *ngIf="stories.length>0">

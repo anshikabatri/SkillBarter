@@ -6,8 +6,8 @@
 
   <ng-container *ngIf="tab==='find'">
     <div class="filters">
-      <input type="text" [(ngModel)]="searchQuery" class="input search-input" placeholder="Search users by name..." (keyup.enter)="searchUsers()">
-      <button class="btn-primary" (click)="searchUsers()">Search</button>
+      <input type="text" [(ngModel)]="searchQuery" class="input search-input" placeholder="Search users by name..." minlength="2" maxlength="80" (keyup.enter)="searchUsers()">
+      <button class="btn-primary" (click)="searchUsers()" [disabled]="!searchQuery.trim()">Search</button>
     </div>
     <div class="loading" *ngIf="loading">Searching...</div>
     <div class="empty" *ngIf="!loading&&searchResults.length===0&&searched">No users found.</div>

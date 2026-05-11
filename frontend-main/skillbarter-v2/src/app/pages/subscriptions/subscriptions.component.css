@@ -107,16 +107,6 @@
   flex-wrap: wrap;
 }
 
-.btn-secondary {
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: 1px solid var(--border2);
-  background: var(--bg3);
-  color: var(--text);
-  font-weight: 600;
-  cursor: pointer;
-}
-
 .error-box {
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid var(--red);

@@ -26,6 +26,10 @@ export class ChatComponent implements OnInit, OnDestroy {
   pollSub?: Subscription;
   @ViewChild('messagesContainer') messagesContainer?: ElementRef<HTMLDivElement>;
   private openedSessionIds = new Set<number>();
+  composerError = '';
+  private readonly maxMessageLength = 1000;
+  private readonly maxFileSizeBytes = 10 * 1024 * 1024;
+  private readonly allowedFileExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.pdf', '.doc', '.docx'];
   colors = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4'];
 
   gc(n: string = '') { return this.colors[(n?.charCodeAt(0)||0) % this.colors.length]; }
@@ -157,8 +161,9 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   get filtered() {
-    if (!this.search) return this.sessions;
-    return this.sessions.filter(s => this.getOther(s)?.toLowerCase().includes(this.search.toLowerCase()));
+    const q = (this.search || '').trim().toLowerCase();
+    if (!q) return this.sessions;
+    return this.sessions.filter(s => this.getOther(s)?.toLowerCase().includes(q));
   }
 
   getOther(s: any): string {
@@ -233,8 +238,13 @@ export class ChatComponent implements OnInit, OnDestroy {
  }
 
   send() {
-    if (!this.newMsg.trim() || !this.selected) return;
-    const content = this.newMsg;
+    const content = (this.newMsg || '').trim();
+    if (!content || !this.selected) return;
+    if (content.length > this.maxMessageLength) {
+      this.composerError = `Message cannot exceed ${this.maxMessageLength} characters.`;
+      return;
+    }
+    this.composerError = '';
     this.newMsg = '';
     this.api.sendMessage(this.selected.sessionId, this.me.userId, content).subscribe({
       next: (res: any) => {
@@ -253,11 +263,26 @@ onFileSelected(event: Event) {
   const file = input?.files?.[0];
   if (!file || !this.selected) return;
 
+  const lowerName = (file.name || '').toLowerCase();
+  const hasValidExtension = this.allowedFileExtensions.some(ext => lowerName.endsWith(ext));
+  if (!hasValidExtension) {
+    this.composerError = 'Unsupported file type. Allowed: images, PDF, DOC, DOCX.';
+    input.value = '';
+    return;
+  }
+  if (file.size > this.maxFileSizeBytes) {
+    this.composerError = 'File size must be 10MB or less.';
+    input.value = '';
+    return;
+  }
+  this.composerError = '';
+
   this.api.sendFile(this.selected.sessionId, this.me.userId, file).subscribe({
     next: (res: any) => {
       const msg = res?.data || res;
       this.messages.push({ ...msg, sender: this.me });
       this.scrollToLatestMessage();
+      input.value = '';
     },
     error: () => {}
   });

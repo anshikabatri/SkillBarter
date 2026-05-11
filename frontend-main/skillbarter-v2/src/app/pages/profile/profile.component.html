@@ -27,8 +27,8 @@
         </div>
 
         <div class="pform">
-            <div class="fg"><label>Your Name</label><input [(ngModel)]="form.name" class="input" placeholder="Full name"></div>
-            <div class="fg"><label>Profile Description</label><textarea [(ngModel)]="form.bio" class="input ta" placeholder="Tell others about yourself..."></textarea></div>
+            <div class="fg"><label>Your Name</label><input [(ngModel)]="form.name" class="input" placeholder="Full name" required minlength="2" maxlength="80" pattern="[A-Za-z][A-Za-z\s.'-]{1,79}"></div>
+            <div class="fg"><label>Profile Description</label><textarea [(ngModel)]="form.bio" class="input ta" placeholder="Tell others about yourself..." maxlength="500"></textarea></div>
 
             <div class="skills-wrap">
                 <div class="skills-col">
@@ -71,7 +71,9 @@
             <div class="success-box" *ngIf="saved">✓ Profile saved successfully!</div>
             <div class="error-box" *ngIf="error">{{ error }}</div>
             <div class="pactions">
-                <button class="btn-primary" (click)="save()" [disabled]="saving">{{ saving ? 'Saving...' : 'Save Profile' }}</button>
+                <button class="btn-primary" (click)="save()" [disabled]="saving || !form.name.trim()">{{ saving ? 'Saving...' : 'Save Profile' }}</button>
+                <button class="btn-secondary" (click)="resetForm()" [disabled]="saving">Reset</button>
+                <button class="btn-ghost" (click)="cancelForm()" [disabled]="saving">Cancel</button>
             </div>
         </div>
     </div>
