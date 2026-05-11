@@ -183,23 +183,25 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.loadingMsgs = true;
     this.markSessionOpened(s?.sessionId);
 
-    // Load messages from all sessions with this person
-    const sessionIds = s.allSessionIds || [s.sessionId];
+    const sessionIds: number[] = s.allSessionIds || [s.sessionId];
 
     forkJoin(
       sessionIds.map((id: number) =>
         this.api.getMessagesBySession(id).pipe(
-          map((res: any) => (res?.data || res || []).map((m: any) => ({ ...m, sender: m?.sender || {} })))
+          map((res: any) => (res?.data || res || []).map((m: any) => ({ ...m, sender: m?.sender || {} })) as any[])
         )
       )
+    ).pipe(
+      map((allMessages: any[]) => (allMessages as any[][]).flat()
+        .sort((a: any, b: any) => new Date(a.sentAt || 0).getTime() - new Date(b.sentAt || 0).getTime())
+      )
     ).subscribe({
-      next: (allMessages: any[][]) => {
-        this.messages = allMessages.flat()
-          .sort((a: any, b: any) => new Date(a.sentAt || 0).getTime() - new Date(b.sentAt || 0).getTime());
+      next: (messages: any[]) => {
+        this.messages = messages;
         this.loadingMsgs = false;
         this.scrollToLatestMessage();
       },
-      error: () => this.loadingMsgs = false
+      error: () => { this.loadingMsgs = false; }
     });
   }
 
@@ -253,17 +255,7 @@ getDateLabel(date: any): string {
   if (this.isSameDay(d, yesterday)) return 'Yesterday';
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
-formatTime(date: any): string {
-  if (!date) return '';
-  const d = new Date(date);
-  // Add IST offset if needed
-  return d.toLocaleTimeString('en-IN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: 'Asia/Kolkata'
-  });
-}
+
 
   private scrollToLatestMessage() {
     setTimeout(() => {
