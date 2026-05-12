@@ -233,12 +233,11 @@ export class CalendarComponent implements OnInit, OnDestroy {
       next: (skills: any[]) => {
         this.mentorSkills = (skills || [])
           .filter((us: any) => !!us?.skill?.skillId)
+          .filter((us: any) => us?.isTeach === true || us?.isTeach === 'true' || us?.isTeach === 1 || us?.isTeach === '1')
           .map((us: any) => ({
             skillId: us.skill.skillId,
             name: us.skill.name,
-            kind: (us?.isTeach === true || us?.isTeach === 'true' || us?.isTeach === 1 || us?.isTeach === '1')
-              ? 'Teach'
-              : ((us?.isLearn === true || us?.isLearn === 'true' || us?.isLearn === 1 || us?.isLearn === '1') ? 'Learn' : '')
+            kind: 'Teach'
           }))
           .filter((s: any, i: number, arr: any[]) => arr.findIndex(x => x.skillId === s.skillId) === i);
         this.loadingRequestData = false;
