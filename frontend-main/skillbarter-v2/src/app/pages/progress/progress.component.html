@@ -31,6 +31,18 @@
           <div class="rating-main">{{ avgRating | number:'1.1-1' }} <span>/ 5</span></div>
           <div class="rating-sub">{{ reviewCount }} {{ reviewCount===1 ? 'review' : 'reviews' }} received</div>
         </div>
+          <div class="card reviews-card">
+              <h2>Reviews Received</h2>
+              <div class="empty" *ngIf="reviews.length === 0">No reviews yet.</div>
+              <div class="review-item" *ngFor="let r of reviews">
+                  <div class="ri-top">
+                      <span class="ri-stars">{{ getStars(r.rating) }}</span>
+                      <span class="ri-rating">{{ r.rating }}/5</span>
+                  </div>
+                  <p class="ri-text" *ngIf="r.reviewText">{{ r.reviewText }}</p>
+                  <p class="ri-by">— {{ r.reviewer?.name || 'Anonymous' }}</p>
+              </div>
+          </div>
         <div class="card">
           <h2>Badges</h2>
           <div class="badges">

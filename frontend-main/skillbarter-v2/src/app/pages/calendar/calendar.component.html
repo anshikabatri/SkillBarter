@@ -73,4 +73,33 @@
         <div class="success" *ngIf="statusSuccess">{{ statusSuccess }}</div>
         <div class="empty" *ngIf="statusError">{{ statusError }}</div>
     </div>
+    <!-- Review Modal -->
+    <div class="review-overlay" *ngIf="showReviewForm">
+        <div class="review-modal">
+            <h3>Rate Your Session</h3>
+            <p class="review-sub">{{ reviewingSession?.skill?.name }} with {{ withUser(reviewingSession) }}</p>
+
+            <div class="star-row">
+      <span *ngFor="let star of [1,2,3,4,5]"
+            class="star"
+            [class.filled]="star <= reviewRating"
+            (click)="setRating(star)">★</span>
+            </div>
+            <p class="star-label">{{ reviewRating }}/5 stars</p>
+
+            <textarea [(ngModel)]="reviewText"
+                      class="input review-ta"
+                      placeholder="Write your review (optional)..."
+                      rows="3"></textarea>
+
+            <div class="review-error" *ngIf="reviewError">{{ reviewError }}</div>
+
+            <div class="review-actions">
+                <button class="btn-primary" (click)="submitReview()" [disabled]="submittingReview">
+                    {{ submittingReview ? 'Submitting...' : 'Submit Review' }}
+                </button>
+                <button class="btn-ghost" (click)="cancelReview()">Cancel</button>
+            </div>
+        </div>
+    </div>
 </div>

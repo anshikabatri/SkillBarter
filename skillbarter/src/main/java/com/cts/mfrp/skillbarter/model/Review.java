@@ -16,13 +16,15 @@ public class Review {
 
     @ManyToOne
     @JoinColumn(name = "reviewer_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "passwordHash", "bio", "profilePhotoUrl", "languagesSpoken", "createdAt"})
     private User reviewer;
 
     @ManyToOne
     @JoinColumn(name = "reviewee_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "passwordHash", "bio", "profilePhotoUrl", "languagesSpoken", "createdAt"})
     private User reviewee;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "session_id")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "mentor", "learner", "skill"})
     private Session session;

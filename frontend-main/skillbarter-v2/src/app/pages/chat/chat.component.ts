@@ -24,6 +24,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   loadingMsgs = false;
   me: any;
   pollSub?: Subscription;
+  private lastReadTimestamps = new Map<number, string>();
   @ViewChild('messagesContainer') messagesContainer?: ElementRef<HTMLDivElement>;
   private openedSessionIds = new Set<number>();
   composerError = '';
@@ -175,8 +176,20 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   isUnread(s: any): boolean {
     if (!s?.sessionId) return false;
-    if (this.selected?.sessionId === s.sessionId) return false;
-    return !this.openedSessionIds.has(Number(s.sessionId)) && !!s.lastMessagePreview;
+    if (this.selected?.otherUser?.userId === s?.otherUser?.userId) return false;
+    if (!s.lastMessagePreview) return false;
+    if (!s.lastMessageAt) return false;
+    if (Number(s.lastMessageSenderId) === Number(this.me?.userId)) return false;
+
+    // Check if we've read up to this message timestamp
+    const allIds: number[] = s.allSessionIds || [s.sessionId];
+    const anyRead = allIds.some((id: number) => {
+      const lastRead = this.lastReadTimestamps.get(Number(id));
+      if (!lastRead) return false;
+      return new Date(lastRead) >= new Date(s.lastMessageAt);
+    });
+
+    return !anyRead;
   }
 
   selectSession(s: any) {
@@ -190,16 +203,18 @@ export class ChatComponent implements OnInit, OnDestroy {
     forkJoin(
       sessionIds.map((id: number) =>
         this.api.getMessagesBySession(id).pipe(
-          map((res: any) => (res?.data || res || []).map((m: any) => ({ ...m, sender: m?.sender || {} })) as any[])
+          map((res: any) => (res?.data || res || []).map((m: any) => ({
+            ...m,
+            sender: m?.sender || {},
+            fileUrl: m?.fileUrl || null,
+            fileType: m?.fileType || null
+          })) as any[])
         )
       )
     ).pipe(
-      map((res: any) => (res?.data || res || []).map((m: any) => ({
-        ...m,
-        sender: m?.sender || {},
-        fileUrl: m?.fileUrl || null,
-        fileType: m?.fileType || null
-      })) as any[])
+      map((allMessages: any[]) => (allMessages as any[][]).flat()
+        .sort((a: any, b: any) => new Date(a.sentAt || 0).getTime() - new Date(b.sentAt || 0).getTime())
+      )
     ).subscribe({
       next: (messages: any[]) => {
         this.messages = messages;
@@ -210,32 +225,34 @@ export class ChatComponent implements OnInit, OnDestroy {
     });
   }
 
- refreshMessagesSilently(sessionId: number) {
-   if (!this.selected) return;
-   const sessionIds: number[] = this.selected.allSessionIds || [sessionId];
+  refreshMessagesSilently(sessionId: number) {
+    if (!this.selected) return;
+    const sessionIds: number[] = this.selected.allSessionIds || [sessionId];
 
-   forkJoin(
-     sessionIds.map((id: number) =>
-       this.api.getMessagesBySession(id).pipe(
-         map((res: any) => (res?.data || res || []).map((m: any) => ({
-           ...m,
-           sender: m?.sender || {}
-         })) as any[])
-       )
-     )
-   ).pipe(
-     map((allMessages: any[]) => (allMessages as any[][]).flat()
-       .sort((a: any, b: any) => new Date(a.sentAt || 0).getTime() - new Date(b.sentAt || 0).getTime())
-     )
-   ).subscribe({
-     next: (messages: any[]) => {
-       const currentLen = this.messages.length;
-       this.messages = messages;
-       if (messages.length > currentLen) this.scrollToLatestMessage();
-     },
-     error: () => {}
-   });
- }
+    forkJoin(
+      sessionIds.map((id: number) =>
+        this.api.getMessagesBySession(id).pipe(
+          map((res: any) => (res?.data || res || []).map((m: any) => ({
+            ...m,
+            sender: m?.sender || {},
+            fileUrl: m?.fileUrl || null,
+            fileType: m?.fileType || null
+          })) as any[])
+        )
+      )
+    ).pipe(
+      map((allMessages: any[]) => (allMessages as any[][]).flat()
+        .sort((a: any, b: any) => new Date(a.sentAt || 0).getTime() - new Date(b.sentAt || 0).getTime())
+      )
+    ).subscribe({
+      next: (messages: any[]) => {
+        const currentLen = this.messages.length;
+        this.messages = messages;
+        if (messages.length > currentLen) this.scrollToLatestMessage();
+      },
+      error: () => {}
+    });
+  }
 
   send() {
     const content = (this.newMsg || '').trim();
@@ -258,45 +275,46 @@ export class ChatComponent implements OnInit, OnDestroy {
       }
     });
   }
-onFileSelected(event: Event) {
-  const input = event.target as HTMLInputElement;
-  const file = input?.files?.[0];
-  if (!file || !this.selected) return;
 
-  const lowerName = (file.name || '').toLowerCase();
-  const hasValidExtension = this.allowedFileExtensions.some(ext => lowerName.endsWith(ext));
-  if (!hasValidExtension) {
-    this.composerError = 'Unsupported file type. Allowed: images, PDF, DOC, DOCX.';
-    input.value = '';
-    return;
-  }
-  if (file.size > this.maxFileSizeBytes) {
-    this.composerError = 'File size must be 10MB or less.';
-    input.value = '';
-    return;
-  }
-  this.composerError = '';
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input?.files?.[0];
+    if (!file || !this.selected) return;
 
-  this.api.sendFile(this.selected.sessionId, this.me.userId, file).subscribe({
-    next: (res: any) => {
-      const msg = res?.data || res;
-      this.messages.push({ ...msg, sender: this.me });
-      this.scrollToLatestMessage();
+    const lowerName = (file.name || '').toLowerCase();
+    const hasValidExtension = this.allowedFileExtensions.some(ext => lowerName.endsWith(ext));
+    if (!hasValidExtension) {
+      this.composerError = 'Unsupported file type. Allowed: images, PDF, DOC, DOCX.';
       input.value = '';
-    },
-    error: () => {}
-  });
-}
+      return;
+    }
+    if (file.size > this.maxFileSizeBytes) {
+      this.composerError = 'File size must be 10MB or less.';
+      input.value = '';
+      return;
+    }
+    this.composerError = '';
 
-getFileUrl(fileUrl: string): string {
-  if (!fileUrl) return '';
-  if (fileUrl.startsWith('http')) return fileUrl;
-  return `${environment.apiUrl.replace('/api', '')}${fileUrl}`;
-}
+    this.api.sendFile(this.selected.sessionId, this.me.userId, file).subscribe({
+      next: (res: any) => {
+        const msg = res?.data || res;
+        this.messages.push({ ...msg, sender: this.me });
+        this.scrollToLatestMessage();
+        input.value = '';
+      },
+      error: () => {}
+    });
+  }
 
-openImage(fileUrl: string) {
-  window.open(this.getFileUrl(fileUrl), '_blank');
-}
+  getFileUrl(fileUrl: string): string {
+    if (!fileUrl) return '';
+    if (fileUrl.startsWith('http')) return fileUrl;
+    return `${environment.apiUrl.replace('/api', '')}${fileUrl}`;
+  }
+
+  openImage(fileUrl: string) {
+    window.open(this.getFileUrl(fileUrl), '_blank');
+  }
 
   isSameDay(date1: any, date2: any): boolean {
     if (!date1 || !date2) return false;
@@ -344,8 +362,13 @@ openImage(fileUrl: string) {
       const raw = localStorage.getItem('chatOpenedSessions') || '[]';
       const ids = JSON.parse(raw) as number[];
       this.openedSessionIds = new Set((ids || []).map(id => Number(id)));
+
+      const tsRaw = localStorage.getItem('chatReadTimestamps') || '{}';
+      const tsMap = JSON.parse(tsRaw) as Record<string, string>;
+      this.lastReadTimestamps = new Map(Object.entries(tsMap).map(([k, v]) => [Number(k), v]));
     } catch {
       this.openedSessionIds = new Set<number>();
+      this.lastReadTimestamps = new Map();
     }
   }
 
@@ -356,6 +379,15 @@ openImage(fileUrl: string) {
   private markSessionOpened(sessionId: number) {
     if (!sessionId) return;
     this.openedSessionIds.add(Number(sessionId));
+    if (this.selected?.allSessionIds) {
+      this.selected.allSessionIds.forEach((id: number) => {
+        this.openedSessionIds.add(Number(id));
+        // Store the last message timestamp when opened
+        if (this.selected.lastMessageAt) {
+          this.lastReadTimestamps.set(Number(id), this.selected.lastMessageAt);
+        }
+      });
+    }
     this.saveOpenedSessionState();
   }
 }

@@ -30,6 +30,12 @@ export class CalendarComponent implements OnInit, OnDestroy {
   statusSuccess = '';
   statusError = '';
   reviewedSessionIds = new Set<number>();
+  showReviewForm = false;
+  reviewingSession: any = null;
+  reviewRating = 5;
+  reviewText = '';
+  reviewError = '';
+  submittingReview = false;
   private pollSub?: Subscription;
 
   get minScheduledAt(): string {
@@ -166,33 +172,50 @@ export class CalendarComponent implements OnInit, OnDestroy {
   }
 
   rateSession(session: any) {
-    if (!this.userId) return;
-    const sessionId = Number(session?.sessionId);
-    const isMentor = Number(session?.mentor?.userId) === Number(this.userId);
-    const revieweeId = Number(isMentor ? session?.learner?.userId : session?.mentor?.userId);
-    if (!sessionId || !revieweeId) return;
+    this.reviewingSession = session;
+    this.showReviewForm = true;
+    this.reviewRating = 5;
+    this.reviewText = '';
+    this.reviewError = '';
+  }
 
-    const ratingInput = prompt('Rate this session (1.0 to 5.0):', '5');
-    if (ratingInput === null) return;
-    const rating = Number(ratingInput);
-    if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
-      this.statusError = 'Please enter a rating between 1 and 5.';
+  submitReview() {
+    if (!this.userId || !this.reviewingSession) return;
+    const sessionId = Number(this.reviewingSession.sessionId);
+    const isMentor = Number(this.reviewingSession.mentor?.userId) === Number(this.userId);
+    const revieweeId = Number(isMentor ? this.reviewingSession.learner?.userId : this.reviewingSession.mentor?.userId);
+
+    if (!this.reviewRating || this.reviewRating < 1 || this.reviewRating > 5) {
+      this.reviewError = 'Please select a rating between 1 and 5';
       return;
     }
 
-    const reviewText = prompt('Write a short review (optional):', '') || '';
-    this.statusError = '';
-    this.statusSuccess = '';
-    this.api.addReview(this.userId, revieweeId, rating, reviewText, sessionId).subscribe({
+    this.submittingReview = true;
+    this.api.addReview(this.userId, revieweeId, this.reviewRating, this.reviewText, sessionId).subscribe({
       next: () => {
         this.reviewedSessionIds.add(sessionId);
+        this.showReviewForm = false;
+        this.reviewingSession = null;
+        this.submittingReview = false;
         this.statusSuccess = 'Thanks! Your review was submitted.';
       },
       error: (e: any) => {
-        this.statusError = e?.error?.message || 'Unable to submit review.';
+        this.reviewError = e?.error?.message || 'Unable to submit review.';
+        this.submittingReview = false;
       }
     });
   }
+
+  cancelReview() {
+    this.showReviewForm = false;
+    this.reviewingSession = null;
+    this.reviewError = '';
+  }
+
+  setRating(r: number) {
+    this.reviewRating = r;
+  }
+
 
   toggleRequestForm() {
     this.showRequest = !this.showRequest;
