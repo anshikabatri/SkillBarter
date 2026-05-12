@@ -2,7 +2,7 @@ import { HttpInterceptorFn } from '@angular/common/http';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // Don't add token for Daily.co API calls
-  if (req.url.includes('daily.co')) {
+  if (req.url.includes('daily.co') || req.url.includes('generativelanguage.googleapis.com')) {
     return next(req);
   }
 
