@@ -142,9 +142,9 @@ export class ProgressComponent implements OnInit {
       }
     });
 
-    this.api.getReviewsByReviewee(userId).subscribe({
-      next: (reviews: any[]) => {
-        this.reviewCount = (reviews || []).length;
+    this.api.getReviewCount(userId).subscribe({
+      next: (count: number) => {
+        this.reviewCount = Number(count || 0);
       },
       error: () => {
         this.reviewCount = 0;

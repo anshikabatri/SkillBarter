@@ -66,6 +66,9 @@ export class ApiService {
   getAverageRating(id: number): Observable<number> {
     return this.http.get(`${this.base}/reviews/reviewee/${id}/average`).pipe(map((res: any) => Number(res?.data ?? res ?? 0) || 0));
   }
+  getReviewCount(id: number): Observable<number> {
+    return this.http.get(`${this.base}/reviews/reviewee/${id}/count`).pipe(map((res: any) => Number(res?.data ?? res ?? 0) || 0));
+  }
   addReview(reviewerId: number, revieweeId: number, rating: number, reviewText: string, sessionId?: number): Observable<any> {
     return this.http.post(`${this.base}/reviews`, { reviewerId, revieweeId, rating, reviewText, sessionId });
   }

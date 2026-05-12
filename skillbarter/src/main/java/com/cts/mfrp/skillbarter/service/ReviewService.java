@@ -91,6 +91,10 @@ public class ReviewService {
         return reviewRepo.findAverageRatingByRevieweeId(revieweeId);
     }
 
+    public long getReviewCount(Integer revieweeId) {
+        return reviewRepo.countByReviewee_UserId(revieweeId);
+    }
+
     public boolean hasReviewerReviewedSession(Integer sessionId, Integer reviewerId) {
         return reviewRepo.existsBySession_SessionIdAndReviewer_UserId(sessionId, reviewerId);
     }

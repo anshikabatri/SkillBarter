@@ -68,6 +68,13 @@ public class ReviewController {
         return ResponseEntity.ok(ApiResponse.success("Average rating fetched", avg));
     }
 
+    // GET /api/reviews/reviewee/{revieweeId}/count
+    @GetMapping("/reviewee/{revieweeId}/count")
+    public ResponseEntity<ApiResponse<Long>> getReviewCount(@PathVariable Integer revieweeId) {
+        long count = reviewService.getReviewCount(revieweeId);
+        return ResponseEntity.ok(ApiResponse.success("Review count fetched", count));
+    }
+
     // DELETE /api/reviews/{reviewId}
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable Integer reviewId) {
