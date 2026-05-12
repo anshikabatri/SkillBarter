@@ -14,6 +14,7 @@ import { Subscription, interval } from 'rxjs';
 })
 export class TopbarComponent implements OnInit, OnDestroy {
   user: any = null;
+  theme: 'dark' | 'light' = 'dark';
   showMenu = false;
   showNotif = false;
   notifications: any[] = [];
@@ -27,6 +28,11 @@ export class TopbarComponent implements OnInit, OnDestroy {
   constructor(private auth: AuthService, private api: ApiService) {}
 
   ngOnInit() {
+    const saved = localStorage.getItem('sb-theme') || localStorage.getItem('theme');
+    if (saved === 'light' || saved === 'dark') this.theme = saved as 'light' | 'dark';
+    if (this.theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+
     this.auth.currentUser$.subscribe(u => {
       this.user = u;
       if (u?.userId) {
@@ -37,6 +43,14 @@ export class TopbarComponent implements OnInit, OnDestroy {
     if (!this.auth.currentUser && this.auth.isLoggedIn) {
       this.auth.resolveAndStoreCurrentUser().subscribe({ next: () => {}, error: () => {} });
     }
+  }
+
+  toggleTheme() {
+    this.theme = this.theme === 'light' ? 'dark' : 'light';
+    if (this.theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    else document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('sb-theme', this.theme);
+    localStorage.setItem('theme', this.theme);
   }
 
   ngOnDestroy() {
