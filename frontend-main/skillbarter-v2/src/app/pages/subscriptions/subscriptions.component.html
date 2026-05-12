@@ -76,7 +76,7 @@
         </div>
 
         <div class="error-box" *ngIf="error">{{ error }}</div>
-        <div class="success-box" *ngIf="success">{{ success }}</div>
+        <div class="success-box" *ngIf="showSuccess">Tip of ₹{{ sentAmount }} sent successfully!</div>
 
         <div class="form-actions">
             <button class="btn-primary" (click)="submit()" [disabled]="submitting">
