@@ -22,16 +22,23 @@ export class SubscriptionsComponent implements OnInit {
   error = '';
   showForm = false;
   submitting = false;
+  amountError = '';
+  showSuccess = false;
+  sentAmount = '';
+  confettiItems: string[] = [];
 
   form = {
     sessionId: null as number | null,
     amount: '',
     paymentMethod: '',
     upiApp: '',
+    otherBank: '',
+    cardNumber: '',
+    cardExpiry: '',
+    cardCvv: '',
+    cardName: '',
     agree: false
   };
-
-  amountError = '';
 
   constructor(private auth: AuthService, private api: ApiService) {}
 
@@ -93,6 +100,24 @@ export class SubscriptionsComponent implements OnInit {
     return true;
   }
 
+  generateConfetti() {
+    const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899'];
+    this.confettiItems = Array.from({ length: 40 }, (_, i) => {
+      const color = colors[i % colors.length];
+      const left = Math.random() * 100;
+      const delay = Math.random() * 1.5;
+      const duration = 1.5 + Math.random() * 1.5;
+      const size = 6 + Math.random() * 8;
+      return `left:${left}%;animation-delay:${delay}s;animation-duration:${duration}s;background:${color};width:${size}px;height:${size}px`;
+    });
+  }
+
+  closeSuccess() {
+    this.showSuccess = false;
+    this.sentAmount = '';
+    this.confettiItems = [];
+  }
+
   submit() {
     this.error = '';
     this.success = '';
@@ -101,20 +126,53 @@ export class SubscriptionsComponent implements OnInit {
     if (!this.form.paymentMethod) { this.error = 'Please select a payment method'; return; }
     if (!this.form.agree) { this.error = 'Please agree to the terms'; return; }
 
+    if (this.form.paymentMethod === 'Card') {
+      const cardNum = this.form.cardNumber.replace(/\s/g, '');
+      if (!cardNum || cardNum.length !== 16) { this.error = 'Please enter a valid 16-digit card number'; return; }
+      if (!this.form.cardExpiry || this.form.cardExpiry.length !== 5) { this.error = 'Please enter a valid expiry date (MM/YY)'; return; }
+      if (!this.form.cardCvv || this.form.cardCvv.length !== 3) { this.error = 'Please enter a valid 3-digit CVV'; return; }
+      if (!this.form.cardName.trim()) { this.error = 'Please enter the name on card'; return; }
+      const [month, year] = this.form.cardExpiry.split('/');
+      const expiry = new Date(2000 + parseInt(year), parseInt(month) - 1);
+      if (expiry < new Date()) { this.error = 'Card has expired'; return; }
+    }
+
+    if (this.form.paymentMethod === 'UPI') {
+      if (!this.form.upiApp) { this.error = 'Please select a UPI app'; return; }
+      if (this.form.upiApp === 'Other') {
+        if (!this.form.otherBank.trim()) { this.error = 'Please enter your UPI ID'; return; }
+        const upiRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/;
+        if (!upiRegex.test(this.form.otherBank.trim())) {
+          this.error = 'Please enter a valid UPI ID (e.g. name@ybl, name@okaxis)';
+          return;
+        }
+      }
+    }
+
+    if (this.form.paymentMethod === 'NetBanking') {
+      if (!this.form.upiApp) { this.error = 'Please select a bank'; return; }
+      if (this.form.upiApp === 'Other' && !this.form.otherBank.trim()) { this.error = 'Please enter your bank name'; return; }
+    }
+
     this.submitting = true;
+    const amount = this.form.amount;
     this.api.createTransaction({
       user: { userId: this.userId },
       session: { sessionId: this.form.sessionId },
-      amount: parseFloat(this.form.amount),
+      amount: parseFloat(amount),
       paymentMethod: this.form.paymentMethod,
       status: 'Success'
     }).subscribe({
       next: () => {
-        this.success = `✅ Donation of ₹${this.form.amount} sent successfully!`;
+        this.sentAmount = amount;
+        this.submitting = false;
         this.reset();
         this.showForm = false;
         this.loadData();
-        this.submitting = false;
+        setTimeout(() => {
+          this.generateConfetti();
+          this.showSuccess = true;
+        }, 100);
       },
       error: (e: any) => {
         this.error = e?.error?.message || 'Transaction failed. Please try again.';
@@ -124,7 +182,12 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   reset() {
-    this.form = { sessionId: null, amount: '', paymentMethod: '', upiApp: '', agree: false };
+    this.form = {
+      sessionId: null, amount: '', paymentMethod: '',
+      upiApp: '', otherBank: '',
+      cardNumber: '', cardExpiry: '', cardCvv: '', cardName: '',
+      agree: false
+    };
     this.amountError = '';
     this.error = '';
   }
@@ -132,5 +195,22 @@ export class SubscriptionsComponent implements OnInit {
   cancel() {
     this.reset();
     this.showForm = false;
+  }
+
+  formatCardNumber(event: any) {
+    let value = event.target.value.replace(/\D/g, '').substring(0, 16);
+    value = value.replace(/(.{4})/g, '$1 ').trim();
+    this.form.cardNumber = value;
+  }
+
+  formatExpiry(event: any) {
+    let value = event.target.value.replace(/\D/g, '').substring(0, 4);
+    if (value.length >= 2) {
+      let month = parseInt(value.substring(0, 2));
+      if (month > 12) month = 12;
+      if (month < 1 && value.length >= 2) month = 1;
+      value = month.toString().padStart(2, '0') + '/' + value.substring(2);
+    }
+    this.form.cardExpiry = value;
   }
 }
