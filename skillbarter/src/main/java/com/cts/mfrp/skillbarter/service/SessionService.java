@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Locale;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -88,6 +89,32 @@ public class SessionService {
                                                        LocalDateTime from,
                                                        LocalDateTime to) {
         return sessionRepo.findByUserAndDateRange(userId, from, to);
+    }
+
+    public Session updateSessionStatus(Integer id, String status) {
+        if (status == null || status.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "status is required");
+        }
+
+        String normalized = status.trim().toLowerCase(Locale.ROOT);
+        Session.SessionStatus mapped;
+        switch (normalized) {
+            case "complete":
+            case "completed":
+                mapped = Session.SessionStatus.Completed;
+                break;
+            case "cancelled":
+            case "canceled":
+                mapped = Session.SessionStatus.Cancelled;
+                break;
+            case "scheduled":
+                mapped = Session.SessionStatus.Scheduled;
+                break;
+            default:
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status: " + status);
+        }
+
+        return updateSessionStatus(id, mapped);
     }
 
     public Session updateSessionStatus(Integer id, Session.SessionStatus status) {

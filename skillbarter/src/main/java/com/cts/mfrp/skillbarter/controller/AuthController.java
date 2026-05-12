@@ -1,11 +1,16 @@
 package com.cts.mfrp.skillbarter.controller;
 
+import com.cts.mfrp.skillbarter.dto.auth.ForgotPasswordRequest;
+import com.cts.mfrp.skillbarter.dto.auth.ForgotPasswordResponse;
+import com.cts.mfrp.skillbarter.dto.auth.LoginRequest;
+import com.cts.mfrp.skillbarter.dto.auth.LoginResponse;
+import com.cts.mfrp.skillbarter.dto.auth.MessageResponse;
+import com.cts.mfrp.skillbarter.dto.auth.RegisterRequest;
+import com.cts.mfrp.skillbarter.dto.auth.ResetPasswordRequest;
 import com.cts.mfrp.skillbarter.model.User;
 import com.cts.mfrp.skillbarter.service.AuthService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -51,47 +56,5 @@ public class AuthController {
     public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
         authService.resetPassword(req.getToken(), req.getNewPassword());
         return ResponseEntity.ok(new MessageResponse("Password reset successful"));
-    }
-
-    // ── Inner request/response classes ───────────────────────────────────────
-
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-    public static class RegisterRequest {
-        @NotBlank private String name;
-        @Email @NotBlank private String email;
-        @NotBlank private String password;
-    }
-
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-    public static class LoginRequest {
-        @Email @NotBlank private String email;
-        @NotBlank private String password;
-    }
-
-    @Getter @AllArgsConstructor
-    public static class LoginResponse {
-        private String token;
-    }
-
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-    public static class ForgotPasswordRequest {
-        @Email @NotBlank private String email;
-    }
-
-    @Getter @AllArgsConstructor
-    public static class ForgotPasswordResponse {
-        private String message;
-        private String resetToken;
-    }
-
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-    public static class ResetPasswordRequest {
-        @NotBlank private String token;
-        @NotBlank private String newPassword;
-    }
-
-    @Getter @AllArgsConstructor
-    public static class MessageResponse {
-        private String message;
     }
 }

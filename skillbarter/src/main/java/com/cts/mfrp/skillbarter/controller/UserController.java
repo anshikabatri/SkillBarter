@@ -1,10 +1,11 @@
 package com.cts.mfrp.skillbarter.controller;
 
+import com.cts.mfrp.skillbarter.dto.user.PasswordRequest;
+import com.cts.mfrp.skillbarter.dto.user.ProfileUpdateRequest;
 import com.cts.mfrp.skillbarter.model.User;
 import com.cts.mfrp.skillbarter.service.UserService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -80,21 +81,5 @@ public class UserController {
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-    public static class PasswordRequest {
-        private String password;
-    }
-
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-    public static class ProfileUpdateRequest {
-        @NotBlank
-        private String name;
-        private String bio;
-        private String profilePhotoUrl;
-        private String languagesSpoken;
-        // kept for frontend compatibility; not used in update
-        private String email;
     }
 }

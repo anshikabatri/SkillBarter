@@ -132,16 +132,21 @@ export class CalendarComponent implements OnInit, OnDestroy {
     return Number(s?.learner?.userId) === Number(this.userId);
   }
 
+  private isParticipant(s: any): boolean {
+    const me = Number(this.userId);
+    return Number(s?.learner?.userId) === me || Number(s?.mentor?.userId) === me;
+  }
+
   canRate(s: any): boolean {
     return this.tab === 'history'
       && (s?.status || '').toLowerCase() === 'completed'
-      && this.isRequester(s)
+      && this.isParticipant(s)
       && !this.reviewedSessionIds.has(Number(s?.sessionId));
   }
 
   private loadReviewStates() {
     if (!this.userId) return;
-    const candidates = this.sessions.filter((s: any) => (s?.status || '').toLowerCase() === 'completed' && this.isRequester(s));
+    const candidates = this.sessions.filter((s: any) => (s?.status || '').toLowerCase() === 'completed' && this.isParticipant(s));
     if (!candidates.length) {
       this.reviewedSessionIds = new Set<number>();
       return;
@@ -163,7 +168,8 @@ export class CalendarComponent implements OnInit, OnDestroy {
   rateSession(session: any) {
     if (!this.userId) return;
     const sessionId = Number(session?.sessionId);
-    const revieweeId = Number(session?.mentor?.userId);
+    const isMentor = Number(session?.mentor?.userId) === Number(this.userId);
+    const revieweeId = Number(isMentor ? session?.learner?.userId : session?.mentor?.userId);
     if (!sessionId || !revieweeId) return;
 
     const ratingInput = prompt('Rate this session (1.0 to 5.0):', '5');

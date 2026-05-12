@@ -195,10 +195,11 @@
   border-radius: 14px;
   font-size: 14px;
   line-height: 1.5;
+  color: #000;
 }
 .mine .bubble {
   background: var(--blue);
-  color: white;
+  color: #000;
   border-bottom-right-radius: 4px;
 }
 .theirs .bubble {
@@ -314,7 +315,7 @@
 }
 
 .file-link {
-  color: white !important;
+  color: #000 !important;
   text-decoration: none;
   font-size: 13px;
   display: flex;

@@ -51,7 +51,7 @@ public class SessionController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<Session> updateStatus(
             @PathVariable Integer id,
-            @RequestParam Session.SessionStatus status) {
+            @RequestParam String status) {
         return ResponseEntity.ok(sessionService.updateSessionStatus(id, status));
     }
 

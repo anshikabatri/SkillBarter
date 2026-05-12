@@ -102,9 +102,11 @@ sendFile(sessionId: number, senderId: number, file: File): Observable<any> {
   formData.append('senderId', senderId.toString());
   return this.http.post(`${this.base}/messages/upload`, formData);
 }
-getTransactionsByUser(userId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/transactions/user/${userId}`); }
 createTransaction(data: any): Observable<any> { return this.http.post(`${this.base}/transactions`, data); }
 getReceivedTransactions(userId: number): Observable<any[]> {
-  return this.http.get<any[]>(`${this.base}/transactions/user/${userId}/received`);
+  return this.http.get<any>(`${this.base}/transactions/user/${userId}/received`).pipe(map((res: any) => res?.data || res || []));
+}
+getTransactionsByUser(userId: number): Observable<any[]> {
+  return this.http.get<any>(`${this.base}/transactions/user/${userId}`).pipe(map((res: any) => res?.data || res || []));
 }
 }

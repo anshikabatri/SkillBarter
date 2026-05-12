@@ -43,19 +43,22 @@ public class ReviewService {
                 throw new RuntimeException("Review is allowed only after session completion");
             }
 
-            Integer requesterId = session.getLearner() != null ? session.getLearner().getUserId() : null;
-            Integer otherUserId = session.getMentor() != null ? session.getMentor().getUserId() : null;
+            Integer mentorId = session.getMentor() != null ? session.getMentor().getUserId() : null;
+            Integer learnerId = session.getLearner() != null ? session.getLearner().getUserId() : null;
 
-            if (requesterId == null || otherUserId == null) {
+            if (mentorId == null || learnerId == null) {
                 throw new RuntimeException("Session users are invalid");
             }
 
-            if (!requesterId.equals(reviewerId)) {
-                throw new RuntimeException("Only the requester can submit a review for this session");
+            boolean reviewerIsMentor = mentorId.equals(reviewerId);
+            boolean reviewerIsLearner = learnerId.equals(reviewerId);
+            if (!reviewerIsMentor && !reviewerIsLearner) {
+                throw new RuntimeException("Only participants of this session can submit a review");
             }
 
+            Integer otherUserId = reviewerIsMentor ? learnerId : mentorId;
             if (!otherUserId.equals(revieweeId)) {
-                throw new RuntimeException("Requester can review only the other participant of this session");
+                throw new RuntimeException("You can review only the other participant of this session");
             }
 
             if (reviewRepo.existsBySession_SessionIdAndReviewer_UserId(sessionId, reviewerId)) {

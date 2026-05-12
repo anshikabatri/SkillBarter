@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 
 @Component({
   selector: 'app-subscriptions',
@@ -60,10 +60,10 @@ export class SubscriptionsComponent implements OnInit {
     this.loadingTxn = true;
 
     forkJoin({
-      learner: this.api.getSessionsByLearner(this.userId),
-      mentor: this.api.getSessionsByMentor(this.userId),
-      sent: this.api.getTransactionsByUser(this.userId),
-      received: this.api.getReceivedTransactions(this.userId)
+      learner: this.api.getSessionsByLearner(this.userId).pipe(catchError(() => of([]))),
+      mentor: this.api.getSessionsByMentor(this.userId).pipe(catchError(() => of([]))),
+      sent: this.api.getTransactionsByUser(this.userId).pipe(catchError(() => of([]))),
+      received: this.api.getReceivedTransactions(this.userId).pipe(catchError(() => of([])))
     }).subscribe({
       next: ({ learner, mentor, sent, received }) => {
         const all = [...(learner || []), ...(mentor || [])]
@@ -74,7 +74,7 @@ export class SubscriptionsComponent implements OnInit {
         this.loading = false;
 
         const allTxns = [...(sent || []), ...(received || [])]
-          .filter((t, i, arr) => arr.findIndex(x => x.transactionId === t.transactionId) === i)
+          .filter((t, i, arr) => arr.findIndex(x => (x.transactionId ?? x.id) === (t.transactionId ?? t.id)) === i)
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         this.transactions = allTxns;
         this.loadingTxn = false;
@@ -87,6 +87,27 @@ export class SubscriptionsComponent implements OnInit {
     const skill = s.skill?.name || 'Session';
     const other = s.mentor?.userId === this.userId ? s.learner?.name : s.mentor?.name;
     return `${skill} with ${other}`;
+  }
+  
+  getTransactionCounterparty(t: any): string {
+    if (!t) return 'Unknown';
+
+    const txUserId = Number(t?.user?.userId);
+    const currentUserId = Number(this.userId);
+    const mentor = t?.session?.mentor;
+    const learner = t?.session?.learner;
+
+    if (txUserId === currentUserId) {
+      if (mentor?.userId && Number(mentor.userId) !== currentUserId) return mentor?.name || `User #${mentor.userId}`;
+      if (learner?.userId && Number(learner.userId) !== currentUserId) return learner?.name || `User #${learner.userId}`;
+      return 'Recipient';
+    }
+
+    return t?.user?.name || `User #${t?.user?.userId ?? 'Unknown'}`;
+  }
+  
+  getTransactionDirection(t: any): 'Sent' | 'Received' {
+    return Number(t?.user?.userId) === Number(this.userId) ? 'Sent' : 'Received';
   }
 
   validateAmount(): boolean {

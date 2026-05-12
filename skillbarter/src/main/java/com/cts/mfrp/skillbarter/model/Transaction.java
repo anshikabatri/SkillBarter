@@ -27,7 +27,7 @@ public class Transaction {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "session_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "mentor", "learner"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Session session;
 
     @NotNull(message = "Amount is required")

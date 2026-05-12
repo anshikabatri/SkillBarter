@@ -96,6 +96,7 @@
             <tr>
                 <th>Date</th>
                 <th>Session</th>
+                <th>To / From</th>
                 <th>Amount</th>
                 <th>Type</th>
                 <th>Method</th>
@@ -106,10 +107,11 @@
             <tr *ngFor="let t of transactions">
                 <td>{{ t.createdAt | date:'MMM d, y' }}</td>
                 <td>{{ t.session?.skill?.name || 'Session #' + t.session?.sessionId }}</td>
+                                <td>{{ getTransactionCounterparty(t) }}</td>
                 <td>₹{{ t.amount }}</td>
                 <td>
-        <span class="badge" [class]="t.user?.userId === userId ? 'sent' : 'received'">
-          {{ t.user?.userId === userId ? '↑ Sent' : '↓ Received' }}
+                <span class="badge" [class]="t.user?.userId === userId ? 'sent' : 'received'">
+                    {{ t.user?.userId === userId ? '↑ Sent' : '↓ Received' }}
         </span>
                 </td>
                 <td>{{ t.paymentMethod }}</td>
