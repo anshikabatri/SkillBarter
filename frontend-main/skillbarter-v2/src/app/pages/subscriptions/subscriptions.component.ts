@@ -30,7 +30,9 @@ export class SubscriptionsComponent implements OnInit {
     sessionId: null as number | null,
     amount: '',
     paymentMethod: '',
+    cardType: '',
     upiApp: '',
+    upiId: '',
     otherBank: '',
     cardNumber: '',
     cardExpiry: '',
@@ -159,9 +161,9 @@ export class SubscriptionsComponent implements OnInit {
     if (this.form.paymentMethod === 'UPI') {
       if (!this.form.upiApp) { this.error = 'Please select a UPI app'; return; }
       if (this.form.upiApp === 'Other') {
-        if (!this.form.otherBank.trim()) { this.error = 'Please enter your UPI ID'; return; }
+        if (!this.form.upiId.trim()) { this.error = 'Please enter your UPI ID'; return; }
         const upiRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/;
-        if (!upiRegex.test(this.form.otherBank.trim())) {
+        if (!upiRegex.test(this.form.upiId.trim())) {
           this.error = 'Please enter a valid UPI ID (e.g. name@ybl, name@okaxis)';
           return;
         }
@@ -203,7 +205,8 @@ export class SubscriptionsComponent implements OnInit {
   reset() {
     this.form = {
       sessionId: null, amount: '', paymentMethod: '',
-      upiApp: '', otherBank: '',
+      cardType: '',
+      upiApp: '', upiId: '', otherBank: '',
       cardNumber: '', cardExpiry: '', cardCvv: '', cardName: '',
       agree: false
     };
@@ -214,6 +217,19 @@ export class SubscriptionsComponent implements OnInit {
   cancel() {
     this.reset();
     this.showForm = false;
+  }
+
+  onPaymentMethodChange() {
+    this.error = '';
+    this.amountError = '';
+    this.form.upiApp = '';
+    this.form.upiId = '';
+    this.form.otherBank = '';
+    this.form.cardType = '';
+    this.form.cardNumber = '';
+    this.form.cardExpiry = '';
+    this.form.cardCvv = '';
+    this.form.cardName = '';
   }
 
   formatCardNumber(event: any) {
