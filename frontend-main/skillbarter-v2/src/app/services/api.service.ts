@@ -83,6 +83,8 @@ deleteUserSkill(userSkillId: number): Observable<any> {
   // ── STORIES ── /api/stories
   getAllStories(): Observable<any[]> { return this.http.get<any[]>(`${this.base}/stories`); }
   createStory(data: any): Observable<any> { return this.http.post(`${this.base}/stories`, data); }
+  updateStory(id: number, data: any): Observable<any> { return this.http.put(`${this.base}/stories/${id}`, data); }
+  deleteStory(id: number): Observable<any> { return this.http.delete(`${this.base}/stories/${id}`); }
 
   // ── CALENDAR ── /api/calendar
   getCalendarByUser(userId: number): Observable<any[]> { return this.http.get<any[]>(`${this.base}/calendar/user/${userId}`); }

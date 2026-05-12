@@ -14,9 +14,32 @@
   <div class="loading" *ngIf="loading">Loading stories...</div>
   <div class="stories-grid" *ngIf="stories.length>0">
     <div class="story-card card" *ngFor="let s of stories">
-      <div class="smeta"><span class="sauthor">{{ s.user?.name || 'User' }}</span><span class="stime">{{ s.createdAt | date:'MMM d' }}</span></div>
-      <h3>{{ s.title }}</h3>
-      <p>{{ s.content }}</p>
+      <div class="smeta">
+        <span class="sauthor">{{ s.user?.name || 'User' }}</span>
+        <span class="stime">{{ s.createdAt | date:'MMM d' }}</span>
+      </div>
+
+      <ng-container *ngIf="editingStoryId !== s.storyId; else editStoryBlock">
+        <div class="story-view">
+          <h3>{{ s.title }}</h3>
+          <p>{{ s.content }}</p>
+        </div>
+        <div class="story-actions" *ngIf="canManageStory(s)">
+          <button class="btn-secondary" (click)="startEditStory(s)">Edit</button>
+          <button class="btn-ghost danger" (click)="deleteStory(s)">Delete</button>
+        </div>
+      </ng-container>
+
+      <ng-template #editStoryBlock>
+        <div class="story-edit">
+          <input [(ngModel)]="editStory.title" class="input" placeholder="Story title" minlength="5" maxlength="120">
+          <textarea [(ngModel)]="editStory.content" class="input ta" placeholder="Edit your story..." rows="4" minlength="20" maxlength="2000"></textarea>
+          <div class="story-actions">
+            <button class="btn-primary" (click)="updateStory(s)" [disabled]="savingStoryId===s.storyId">{{ savingStoryId===s.storyId ? 'Saving...' : 'Save Changes' }}</button>
+            <button class="btn-secondary" (click)="cancelEditStory()" [disabled]="savingStoryId===s.storyId">Cancel</button>
+          </div>
+        </div>
+      </ng-template>
     </div>
   </div>
   <div class="empty" *ngIf="!loading&&stories.length===0">No stories yet. Be the first to share!</div>

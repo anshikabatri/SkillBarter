@@ -45,6 +45,11 @@
 }
 .story-card {
 }
+.story-view {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 .smeta {
   display: flex;
   justify-content: space-between;
@@ -69,6 +74,21 @@
   color: var(--text2);
   font-size: 13px;
   line-height: 1.6;
+}
+.story-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.story-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.danger {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.25);
 }
 .empty {
   color: var(--text2);
