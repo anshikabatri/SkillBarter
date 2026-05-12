@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
+import { Subscription, interval } from 'rxjs';
 
 @Component({
   selector: 'app-progress',
@@ -11,8 +12,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './progress.component.html',
   styleUrl: './progress.component.css'
 })
-export class ProgressComponent implements OnInit {
-  loading = true;
+export class ProgressComponent implements OnInit, OnDestroy {  loading = true;
   errorMsg = '';
   userId?: number;
   sessions:any[]=[];
@@ -24,6 +24,8 @@ export class ProgressComponent implements OnInit {
   currentLevelFloor=0;
   avgRating=0;
   reviewCount=0;
+  reviews: any[] = [];
+  private pollSub?: Subscription;
 
   levels=[
     {l:1,n:'Newcomer',xp:0,next:400,nn:'Apprentice'},
@@ -104,9 +106,17 @@ export class ProgressComponent implements OnInit {
     });
   }
 
+ngOnDestroy() {
+  this.pollSub?.unsubscribe();
+}
   loadAll(userId: number) {
     this.loading = true;
     this.errorMsg = '';
+    this.startPolling(userId);
+    this.api.getReviewsByReviewee(userId).subscribe({
+      next: (reviews: any[]) => { this.reviews = reviews || []; },
+      error: () => { this.reviews = []; }
+    });
 
     this.api.getUser(userId).subscribe({
       next: (u: any) => {
@@ -175,4 +185,25 @@ export class ProgressComponent implements OnInit {
     this.nextLevelName=cur.nn;
     this.currentLevelFloor=cur.xp;
   }
+getStars(rating: number): string {
+  const full = Math.round(rating);
+  return '★'.repeat(full) + '☆'.repeat(5 - full);
+}
+startPolling(userId: number) {
+  this.pollSub?.unsubscribe();
+  this.pollSub = interval(10000).subscribe(() => {
+    this.api.getReviewsByReviewee(userId).subscribe({
+      next: (reviews: any[]) => { this.reviews = reviews || []; },
+      error: () => {}
+    });
+    this.api.getAverageRating(userId).subscribe({
+      next: (avg: number) => { this.avgRating = Number(avg || 0); },
+      error: () => {}
+    });
+    this.api.getReviewCount(userId).subscribe({
+      next: (count: number) => { this.reviewCount = Number(count || 0); },
+      error: () => {}
+    });
+  });
+}
 }

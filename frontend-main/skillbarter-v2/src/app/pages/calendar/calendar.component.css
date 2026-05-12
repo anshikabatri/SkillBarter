@@ -292,3 +292,80 @@
   background: rgba(234, 179, 8, 0.15);
   color: #eab308;
 }
+.review-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.review-modal {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 32px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.review-modal h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.review-sub {
+  color: var(--text2);
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.star-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.star {
+  font-size: 36px;
+  cursor: pointer;
+  color: var(--border2);
+  transition: color 0.2s;
+}
+
+.star.filled {
+  color: #f59e0b;
+}
+
+.star:hover {
+  color: #f59e0b;
+}
+
+.star-label {
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 16px;
+}
+
+.review-ta {
+  width: 100%;
+  resize: none;
+  margin-bottom: 12px;
+}
+
+.review-error {
+  color: var(--red);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.review-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}

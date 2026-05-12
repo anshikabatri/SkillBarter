@@ -275,4 +275,14 @@
   .lb-right {
     text-align: left;
   }
-}
+  .review-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border2);
+  }
+  .review-item:last-child { border-bottom: none; }
+    .ri-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .ri-stars { color: #f59e0b; font-size: 16px; }
+    .ri-rating { font-size: 12px; color: var(--text2); }
+    .ri-text { font-size: 13px; color: var(--text); margin-bottom: 4px; }
+    .ri-by { font-size: 12px; color: var(--text2); font-style: italic; }
+  }

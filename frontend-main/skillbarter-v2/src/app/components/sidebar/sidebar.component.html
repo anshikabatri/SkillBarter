@@ -55,8 +55,11 @@
           <span>Calendar</span>
         </a>
         <a routerLink="/app/chat" routerLinkActive="active" class="mobile-nav-item">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span>Chat</span>
+            <div class="nav-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span class="nav-unread-dot" *ngIf="hasUnreadChat"></span>
+            </div>
+            <span>Chat</span>
         </a>
         <a routerLink="/app/progress" routerLinkActive="active" class="mobile-nav-item">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
@@ -74,3 +77,4 @@
     </div>
   </div>
 </div>
+<div style="color:red;font-size:10px">unread:{{hasUnreadChat}}</div>

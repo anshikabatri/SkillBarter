@@ -23,67 +23,67 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadOpenedSessionState();
-    this.refreshChatIndicator();
-    this.chatPollSub = interval(5000).subscribe(() => this.refreshChatIndicator());
+    const user = this.auth.currentUser;
+    if (user?.userId) {
+      this.checkUnreadForUser(user.userId);
+      this.chatPollSub = interval(5000).subscribe(() => this.checkUnreadForUser(user.userId));
+    } else if (this.auth.isLoggedIn) {
+      this.auth.resolveAndStoreCurrentUser().subscribe({
+        next: resolved => {
+          if (resolved?.userId) {
+            this.checkUnreadForUser(resolved.userId);
+            this.chatPollSub = interval(5000).subscribe(() => this.checkUnreadForUser(resolved.userId));
+          }
+        },
+        error: () => {}
+      });
+    }
   }
 
   ngOnDestroy(): void {
     this.chatPollSub?.unsubscribe();
   }
 
-  private refreshChatIndicator() {
-    const user = this.auth.currentUser;
-    if (!user?.userId && !this.auth.isLoggedIn) {
-      this.hasUnreadChat = false;
-      return;
-    }
-
-    const resolveUser$ = user?.userId ? forkJoin({ learner: this.api.getSessionsByLearner(user.userId), mentor: this.api.getSessionsByMentor(user.userId) }) : this.auth.resolveAndStoreCurrentUser().pipe(
-      map(resolved => resolved?.userId ? resolved : null),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      map((resolved: any) => resolved)
-    );
-
-    if (user?.userId) {
-      this.checkUnreadForUser(user.userId);
-      return;
-    }
-
-    this.auth.resolveAndStoreCurrentUser().subscribe({
-      next: resolved => this.checkUnreadForUser(resolved.userId),
-      error: () => { this.hasUnreadChat = false; }
-    });
-  }
-
   private checkUnreadForUser(userId: number) {
-    forkJoin({ learner: this.api.getSessionsByLearner(userId), mentor: this.api.getSessionsByMentor(userId) }).subscribe({
+    this.loadOpenedSessionState();
+    forkJoin({
+      learner: this.api.getSessionsByLearner(userId),
+      mentor: this.api.getSessionsByMentor(userId)
+    }).subscribe({
       next: ({ learner, mentor }) => {
         const sessions = [...(learner || []), ...(mentor || [])]
           .filter((session, index, arr) => arr.findIndex(x => x.sessionId === session.sessionId) === index);
 
-        if (!sessions.length) {
-          this.hasUnreadChat = false;
-          return;
-        }
+        if (!sessions.length) { this.hasUnreadChat = false; return; }
 
         forkJoin(
           sessions.map(session =>
             this.api.getMessagesBySession(session.sessionId).pipe(
-              map((res: any) => ({ sessionId: session.sessionId, count: (res?.data || res || []).length }))
+              map((res: any) => {
+                const msgs = res?.data || res || [];
+                const lastMsg = msgs.length ? msgs[msgs.length - 1] : null;
+                return {
+                  sessionId: session.sessionId,
+                  lastSenderId: lastMsg?.sender?.userId || null,
+                  hasMessages: msgs.length > 0
+                };
+              })
             )
           )
         ).subscribe({
           next: (results: any[]) => {
-            this.hasUnreadChat = results.some(item => Number(item.count || 0) > 0 && !this.openedSessionIds.has(Number(item.sessionId)));
+            this.loadOpenedSessionState();
+            this.hasUnreadChat = results.some(item =>
+              item.hasMessages &&
+              !this.openedSessionIds.has(Number(item.sessionId)) &&
+              Number(item.lastSenderId) !== Number(userId)
+            );
+            console.log('hasUnreadChat:', this.hasUnreadChat, results);
           },
-          error: () => {
-            this.hasUnreadChat = false;
-          }
+          error: () => { this.hasUnreadChat = false; }
         });
       },
-      error: () => {
-        this.hasUnreadChat = false;
-      }
+      error: () => { this.hasUnreadChat = false; }
     });
   }
 
