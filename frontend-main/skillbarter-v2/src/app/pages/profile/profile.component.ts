@@ -14,6 +14,7 @@ import { ApiService } from '../../services/api.service';
 export class ProfileComponent implements OnInit {
   user: any;
   form = { name: '', bio: '' };
+  private initialForm = { name: '', bio: '' };
   saving = false;
   saved = false;
   error = '';
@@ -30,6 +31,9 @@ export class ProfileComponent implements OnInit {
   selectedTeachSkillId: number | null = null;
   selectedLearnSkillId: number | null = null;
   colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'];
+  private readonly nameRegex = /^[A-Za-z][A-Za-z\s.'-]{1,79}$/;
+  private readonly maxPhotoSizeBytes = 5 * 1024 * 1024;
+  private readonly allowedPhotoTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
   gc(n: string = '') { return this.colors[(n?.charCodeAt(0) || 0) % this.colors.length]; }
 
@@ -40,6 +44,7 @@ export class ProfileComponent implements OnInit {
     if (this.user) {
       this.form.name = this.user.name || '';
       this.form.bio = this.user.bio || '';
+      this.initialForm = { ...this.form };
       this.showPhotoPicker = !this.user?.profilePhotoUrl;
       this.loadSkills();
       this.api.getAllSkills().subscribe({
@@ -93,17 +98,53 @@ export class ProfileComponent implements OnInit {
 
   save() {
     if (!this.user?.userId) { this.error = 'Please sign in again.'; return; }
+    const name = String(this.form.name || '').trim();
+    const bio = String(this.form.bio || '').trim();
+    if (!name) { this.error = 'Please enter your name.'; return; }
+    if (!this.nameRegex.test(name)) { this.error = 'Please enter a valid name.'; return; }
+    if (bio.length > 500) { this.error = 'Profile description must be 500 characters or less.'; return; }
+
+    this.form.name = name;
+    this.form.bio = bio;
     this.saving = true; this.error = '';
-    this.api.updateUser(this.user?.userId, { name: this.form.name, bio: this.form.bio, email: this.user?.email }).subscribe({
-      next: (u: any) => { this.auth.setUser(u); this.saving = false; this.saved = true; setTimeout(() => this.saved = false, 3000); },
+    this.api.updateUser(this.user?.userId, { name, bio, email: this.user?.email }).subscribe({
+      next: (u: any) => {
+        this.auth.setUser(u);
+        this.user = u;
+        this.initialForm = { name: u?.name || name, bio: u?.bio || bio };
+        this.saving = false;
+        this.saved = true;
+        setTimeout(() => this.saved = false, 3000);
+      },
       error: (e: any) => { this.error = e?.error?.message || 'Failed to save.'; this.saving = false; }
     });
+  }
+
+  resetForm() {
+    this.form = { ...this.initialForm };
+    this.error = '';
+    this.saved = false;
+  }
+
+  cancelForm() {
+    this.resetForm();
   }
 
   onPhotoSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input?.files?.[0];
     if (!file) return;
+    if (!this.allowedPhotoTypes.includes(file.type)) {
+      this.error = 'Please upload a valid image file (JPG, PNG, WEBP, GIF).';
+      input.value = '';
+      return;
+    }
+    if (file.size > this.maxPhotoSizeBytes) {
+      this.error = 'Photo size must be 5MB or less.';
+      input.value = '';
+      return;
+    }
+    this.error = '';
     this.photoSavedMessage = '';
     this.selectedPhoto = file;
     this.photoPreview = URL.createObjectURL(file);

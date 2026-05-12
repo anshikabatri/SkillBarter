@@ -18,7 +18,6 @@ export class TopbarComponent implements OnInit, OnDestroy {
   showNotif = false;
   notifications: any[] = [];
   unreadCount = 0;
-  isLightMode = false;
   incomingCall: any = null;
   incomingTip: any = null;
   private pollSub?: Subscription;
@@ -28,8 +27,6 @@ export class TopbarComponent implements OnInit, OnDestroy {
   constructor(private auth: AuthService, private api: ApiService) {}
 
   ngOnInit() {
-    this.isLightMode = (localStorage.getItem('theme') || 'dark') === 'light';
-    document.documentElement.setAttribute('data-theme', this.isLightMode ? 'light' : 'dark');
     this.auth.currentUser$.subscribe(u => {
       this.user = u;
       if (u?.userId) {
@@ -51,14 +48,6 @@ export class TopbarComponent implements OnInit, OnDestroy {
     this.pollSub = interval(5000).subscribe(() => {
       this.loadNotifs(userId);
     });
-  }
-
-  toggleTheme(e: Event) {
-    e.stopPropagation();
-    this.isLightMode = !this.isLightMode;
-    const theme = this.isLightMode ? 'light' : 'dark';
-    localStorage.setItem('theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
   }
 
   loadNotifs(userId: number) {

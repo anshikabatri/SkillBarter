@@ -71,7 +71,18 @@ export class MatchesComponent implements OnInit {
   }
 
   searchUsers() {
-    if (!this.searchQuery.trim()) { this.loadAllUsers(); return; }
+    const query = (this.searchQuery || '').trim();
+    if (!query) { this.loadAllUsers(); return; }
+    if (query.length < 2) {
+      this.message = 'Please enter at least 2 characters to search.';
+      return;
+    }
+    if (query.length > 80) {
+      this.message = 'Search query cannot exceed 80 characters.';
+      return;
+    }
+    this.searchQuery = query;
+    this.message = '';
     this.loading = true; this.searched = true;
     this.ensureUser().subscribe({
       next: (me) => {
@@ -79,7 +90,7 @@ export class MatchesComponent implements OnInit {
           next: d => {
             this.searchResults = (d||[])
               .filter((u: any) => u?.user?.userId !== me?.userId)
-              .filter((u: any) => ((u?.user?.name || '').toLowerCase().includes(this.searchQuery.toLowerCase())))
+              .filter((u: any) => ((u?.user?.name || '').toLowerCase().includes(query.toLowerCase())))
               .map((u: any) => ({ ...u, score: this.normalizeScore(u?.score) ?? 0 }));
             this.loading = false;
           },

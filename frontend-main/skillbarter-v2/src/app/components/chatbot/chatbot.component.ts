@@ -13,6 +13,7 @@ export class ChatbotComponent implements OnInit {
   isOpen = false;
   userInput = '';
   messages: Array<{from: 'user' | 'bot'; text: string}> = [];
+  private readonly maxInputLength = 300;
 
   lang: 'en' | 'hi' | 'te' | 'ta' = 'en';
 
@@ -135,6 +136,10 @@ export class ChatbotComponent implements OnInit {
   sendUserInput() {
     const text = (this.userInput || '').trim();
     if (!text) return;
+    if (text.length > this.maxInputLength) {
+      this.pushMessage('bot', `Please keep your question under ${this.maxInputLength} characters.`);
+      return;
+    }
     this.pushMessage('user', text);
     this.userInput = '';
     this.reply(text);

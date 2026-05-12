@@ -10,22 +10,23 @@
         <div class="req-box" *ngIf="showRequest">
             <h4>Create Session Request</h4>
             <div class="req-grid">
-                <select class="input" [(ngModel)]="request.mentorId" (change)="onMentorChange()">
+                <select class="input" [(ngModel)]="request.mentorId" required (change)="onMentorChange()">
                     <option [ngValue]="null">Select match</option>
                     <option *ngFor="let m of requestMatches" [ngValue]="m.userId">{{ m.name }}</option>
                 </select>
 
-                <select class="input" [(ngModel)]="request.skillId" [disabled]="!request.mentorId">
+                <select class="input" [(ngModel)]="request.skillId" required [disabled]="!request.mentorId">
                     <option [ngValue]="null">Select skill</option>
                     <option *ngFor="let s of mentorSkills" [ngValue]="s.skillId">{{ s.name }}{{ s.kind ? ' (' + s.kind + ')' : '' }}</option>
                 </select>
 
-                <input class="input" type="datetime-local" [(ngModel)]="request.scheduledAt" [min]="minScheduledAt">
+                <input class="input" type="datetime-local" [(ngModel)]="request.scheduledAt" [min]="minScheduledAt" required>
             </div>
 
             <div class="req-actions">
-                <button class="btn-primary" (click)="submitRequest()" [disabled]="submitting">{{ submitting ? 'Creating...' : 'Create Request' }}</button>
-                <button class="btn-secondary" (click)="showRequest=false">Cancel</button>
+                <button class="btn-primary" (click)="submitRequest()" [disabled]="submitting || !isRequestFormValid">{{ submitting ? 'Creating...' : 'Create Request' }}</button>
+                <button class="btn-secondary" (click)="resetRequestForm()" [disabled]="submitting">Reset</button>
+                <button class="btn-ghost" (click)="cancelRequestForm()" [disabled]="submitting">Cancel</button>
             </div>
             <div class="loading" *ngIf="loadingRequestData">Loading matches/skills...</div>
             <div class="empty" *ngIf="requestError">{{ requestError }}</div>

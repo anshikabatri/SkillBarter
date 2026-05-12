@@ -4,7 +4,7 @@
             Messages
             <span class="title-dot" *ngIf="hasUnreadSessions"></span>
         </h2>
-        <input type="text" [(ngModel)]="search" class="input si" placeholder="Search...">
+        <input type="text" [(ngModel)]="search" class="input si" placeholder="Search..." maxlength="80">
         <div class="loading" *ngIf="loadingSessions">Loading conversations...</div>
         <div class="empty-c" *ngIf="!loadingSessions && sessions.length===0">No sessions yet. Match with someone first!</div>
 
@@ -59,9 +59,10 @@
         <div class="input-row">
             <label class="attach-btn" for="fileInput">📎</label>
             <input type="file" id="fileInput" style="display:none" accept="image/*,.pdf,.doc,.docx" (change)="onFileSelected($event)">
-            <input type="text" [(ngModel)]="newMsg" class="input mi" placeholder="Write a message..." (keyup.enter)="send()">
-            <button class="btn-primary" (click)="send()">Send</button>
+            <input type="text" [(ngModel)]="newMsg" class="input mi" placeholder="Write a message..." maxlength="1000" (keyup.enter)="send()">
+            <button class="btn-primary" (click)="send()" [disabled]="!newMsg.trim()">Send</button>
         </div>
+        <div class="empty-m" *ngIf="composerError">{{ composerError }}</div>
     </div>
 
     <div class="no-chat" *ngIf="!selected && !isMobile()">

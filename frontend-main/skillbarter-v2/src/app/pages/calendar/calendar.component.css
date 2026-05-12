@@ -104,14 +104,6 @@
   gap: 8px;
   margin-top: 10px;
 }
-.btn-secondary {
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--border2);
-  background: transparent;
-  color: var(--text2);
-  cursor: pointer;
-}
 .success {
   color: var(--green);
   font-size: 13px;

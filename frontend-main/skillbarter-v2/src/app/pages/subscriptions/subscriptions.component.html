@@ -39,7 +39,7 @@
             <label>Payment Method *</label>
             <div class="radio-group">
                 <label class="radio-label">
-                    <input type="radio" [(ngModel)]="form.paymentMethod" value="UPI"> UPI
+                    <input type="radio" [(ngModel)]="form.paymentMethod" value="UPI"> UPI (GPay/PhonePe/Paytm)
                 </label>
                 <label class="radio-label">
                     <input type="radio" [(ngModel)]="form.paymentMethod" value="Card"> Debit/Credit Card
@@ -49,59 +49,25 @@
                 </label>
             </div>
 
-            <!-- UPI Apps -->
+            <!-- Show UPI apps when UPI is selected -->
             <div class="upi-apps" *ngIf="form.paymentMethod === 'UPI'">
                 <label>Select UPI App</label>
                 <div class="upi-group">
-                    <label class="upi-label" [class.selected]="form.upiApp === 'GPay'" (click)="form.upiApp = 'GPay'">📱 GPay</label>
-                    <label class="upi-label" [class.selected]="form.upiApp === 'PhonePe'" (click)="form.upiApp = 'PhonePe'">📱 PhonePe</label>
-                    <label class="upi-label" [class.selected]="form.upiApp === 'Paytm'" (click)="form.upiApp = 'Paytm'">📱 Paytm</label>
-                    <label class="upi-label" [class.selected]="form.upiApp === 'Other'" (click)="form.upiApp = 'Other'">📱 Other</label>
-                </div>
-                <div class="other-input" *ngIf="form.upiApp === 'Other'">
-                    <input type="text" [(ngModel)]="form.otherBank" class="input" placeholder="Enter UPI ID (e.g. name@upi)">
-                </div>
-            </div>
-
-            <!-- Net Banking -->
-            <div class="upi-apps" *ngIf="form.paymentMethod === 'NetBanking'">
-                <label>Select Bank</label>
-                <div class="upi-group">
-                    <label class="upi-label" [class.selected]="form.upiApp === 'SBI'" (click)="form.upiApp = 'SBI'">🏦 SBI</label>
-                    <label class="upi-label" [class.selected]="form.upiApp === 'HDFC'" (click)="form.upiApp = 'HDFC'">🏦 HDFC</label>
-                    <label class="upi-label" [class.selected]="form.upiApp === 'ICICI'" (click)="form.upiApp = 'ICICI'">🏦 ICICI</label>
-                    <label class="upi-label" [class.selected]="form.upiApp === 'Axis'" (click)="form.upiApp = 'Axis'">🏦 Axis</label>
-                    <label class="upi-label" [class.selected]="form.upiApp === 'Kotak'" (click)="form.upiApp = 'Kotak'">🏦 Kotak</label>
-                    <label class="upi-label" [class.selected]="form.upiApp === 'Other'" (click)="form.upiApp = 'Other'">🏦 Other</label>
-                </div>
-                <div class="other-input" *ngIf="form.upiApp === 'Other'">
-                    <input type="text" [(ngModel)]="form.otherBank" class="input" placeholder="Enter your bank name">
-                </div>
-            </div>
-            <!-- Card Payment -->
-            <div class="upi-apps" *ngIf="form.paymentMethod === 'Card'">
-                <label>Card Details</label>
-                <div class="card-form">
-                    <input type="text" [(ngModel)]="form.cardNumber" class="input"
-                           placeholder="Card Number (16 digits)"
-                           maxlength="19"
-                           (input)="formatCardNumber($event)">
-                    <div class="card-row">
-                        <input type="text" [(ngModel)]="form.cardExpiry" class="input"
-                               placeholder="MM/YY"
-                               maxlength="5"
-                               (input)="formatExpiry($event)">
-                        <input type="text" [(ngModel)]="form.cardCvv" class="input"
-                               placeholder="CVV"
-                               maxlength="3"
-                               type="password">
-                    </div>
-                    <input type="text" [(ngModel)]="form.cardName" class="input"
-                           placeholder="Name on Card">
+                    <label class="upi-label" [class.selected]="form.upiApp === 'GPay'" (click)="form.upiApp = 'GPay'">
+                        📱 GPay
+                    </label>
+                    <label class="upi-label" [class.selected]="form.upiApp === 'PhonePe'" (click)="form.upiApp = 'PhonePe'">
+                        📱 PhonePe
+                    </label>
+                    <label class="upi-label" [class.selected]="form.upiApp === 'Paytm'" (click)="form.upiApp = 'Paytm'">
+                        📱 Paytm
+                    </label>
+                    <label class="upi-label" [class.selected]="form.upiApp === 'Other'" (click)="form.upiApp = 'Other'">
+                        📱 Other
+                    </label>
                 </div>
             </div>
         </div>
-
         <div class="fg">
             <label class="checkbox-label">
                 <input type="checkbox" [(ngModel)]="form.agree">
@@ -110,8 +76,7 @@
         </div>
 
         <div class="error-box" *ngIf="error">{{ error }}</div>
-        <!-- Success Animation -->
-
+        <div class="success-box" *ngIf="success">{{ success }}</div>
 
         <div class="form-actions">
             <button class="btn-primary" (click)="submit()" [disabled]="submitting">
@@ -143,9 +108,9 @@
                 <td>{{ t.session?.skill?.name || 'Session #' + t.session?.sessionId }}</td>
                 <td>₹{{ t.amount }}</td>
                 <td>
-            <span class="badge" [class]="t.user?.userId === userId ? 'sent' : 'received'">
-              {{ t.user?.userId === userId ? '↑ Sent' : '↓ Received' }}
-            </span>
+        <span class="badge" [class]="t.user?.userId === userId ? 'sent' : 'received'">
+          {{ t.user?.userId === userId ? '↑ Sent' : '↓ Received' }}
+        </span>
                 </td>
                 <td>{{ t.paymentMethod }}</td>
                 <td>
@@ -154,18 +119,5 @@
             </tr>
             </tbody>
         </table>
-    </div>
-    <!-- Success Animation - OUTSIDE form-card -->
-    <div class="success-overlay" *ngIf="showSuccess">
-        <div class="success-card">
-            <div class="confetti-wrap">
-                <span *ngFor="let c of confettiItems" class="confetti-piece" [style]="c"></span>
-            </div>
-            <div class="success-icon">💝</div>
-            <h3 class="success-title">Tip Sent!</h3>
-            <p class="success-amount">₹{{ sentAmount }}</p>
-            <p class="success-sub">Your appreciation has been sent to your mentor!</p>
-            <button class="btn-primary" (click)="closeSuccess()">Done 🎉</button>
-        </div>
     </div>
 </div>

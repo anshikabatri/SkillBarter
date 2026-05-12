@@ -39,6 +39,12 @@ export class CalendarComponent implements OnInit, OnDestroy {
     return local.toISOString().slice(0, 16);
   }
 
+  get isRequestFormValid(): boolean {
+    if (!this.request.mentorId || !this.request.skillId || !this.request.scheduledAt) return false;
+    const selectedDate = new Date(this.request.scheduledAt);
+    return Number.isFinite(selectedDate.getTime()) && selectedDate.getTime() > Date.now();
+  }
+
   isExpired(s: any): boolean {
     const status = (s.status || '').toLowerCase();
     const scheduledAt = new Date(s.scheduledAt);
@@ -244,7 +250,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
     if (!this.userId) { this.requestError = 'Please login again.'; return; }
     if (!this.request.mentorId || !this.request.skillId || !this.request.scheduledAt) { this.requestError = 'Please fill all fields.'; return; }
 
-    const selectedDate = new Date(this.request.scheduledAt);
+    const selectedDate = new Date((this.request.scheduledAt || '').trim());
     if (Number.isNaN(selectedDate.getTime())) {
       this.requestError = 'Please enter a valid session date and time.';
       return;
@@ -255,11 +261,12 @@ export class CalendarComponent implements OnInit, OnDestroy {
     }
 
     this.submitting = true;
+    const scheduledAt = (this.request.scheduledAt || '').trim();
     this.api.createSession({
       mentor: { userId: this.request.mentorId },
       learner: { userId: this.userId },
       skill: { skillId: this.request.skillId },
-      scheduledAt: this.request.scheduledAt
+      scheduledAt
     }).subscribe({
       next: () => {
         this.submitting = false;
@@ -273,6 +280,18 @@ export class CalendarComponent implements OnInit, OnDestroy {
         this.requestError = e?.error?.message || 'Failed to create session request.';
       }
     });
+  }
+
+  resetRequestForm() {
+    this.request = { mentorId: null, skillId: null, scheduledAt: '' };
+    this.mentorSkills = [];
+    this.requestError = '';
+    this.requestSuccess = '';
+  }
+
+  cancelRequestForm() {
+    this.resetRequestForm();
+    this.showRequest = false;
   }
 
   markComplete(session: any) {

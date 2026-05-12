@@ -15,14 +15,8 @@ export class AppComponent implements OnInit {
 
   constructor(public router: Router) {}
 
-  showThemeToggle(): boolean {
-    const url = this.router.url;
-    const hideOn = ['/', '/login', '/signup', '/forgot-password'];
-    return !hideOn.includes(url);
-  }
-
   ngOnInit(): void {
-    const saved = localStorage.getItem('sb-theme');
+    const saved = localStorage.getItem('sb-theme') || localStorage.getItem('theme');
     if (saved === 'light' || saved === 'dark') {
       this.theme = saved as 'light' | 'dark';
     } else {
@@ -43,5 +37,6 @@ export class AppComponent implements OnInit {
       document.documentElement.removeAttribute('data-theme');
     }
     localStorage.setItem('sb-theme', this.theme);
+    localStorage.setItem('theme', this.theme);
   }
 }
