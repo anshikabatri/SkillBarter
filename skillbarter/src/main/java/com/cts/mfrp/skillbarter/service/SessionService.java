@@ -134,6 +134,8 @@ public class SessionService {
 
             try {
                 String skillName = session.getSkill() != null ? session.getSkill().getName() : "session";
+                notificationService.deleteSessionNotifications(mentor.getUserId());
+                notificationService.deleteSessionNotifications(learner.getUserId());
                 notificationService.createNotification(
                         mentor.getUserId(),
                         Notification.NotificationType.Session,

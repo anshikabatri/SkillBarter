@@ -1,6 +1,7 @@
 package com.cts.mfrp.skillbarter.repo;
 
 import com.cts.mfrp.skillbarter.model.Notification;
+import com.cts.mfrp.skillbarter.model.Notification.NotificationType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -11,4 +12,6 @@ public interface NotificationRepo extends JpaRepository<Notification, Integer> {
     List<Notification> findByUser_UserId(Integer userId);
 
     List<Notification> findByUser_UserIdAndIsRead(Integer userId, Boolean isRead);
+
+    void deleteByUser_UserIdAndType(Integer userId, NotificationType type);
 }

@@ -69,7 +69,8 @@ export class TopbarComponent implements OnInit, OnDestroy {
       next: (res: any) => {
         const list = Array.isArray(res) ? res : (res?.data || []);
         this.notifications = list.map((n: any) => ({ ...n, message: n?.message || n?.content }));
-        this.unreadCount = this.notifications.filter((n: any) => !n.isRead).length;
+        this.notifications = this.notifications.filter((n: any) => !n.isRead);
+        this.unreadCount = this.notifications.length;
         this.checkIncomingCall();
       },
       error: () => {}
@@ -127,7 +128,10 @@ export class TopbarComponent implements OnInit, OnDestroy {
   markRead(n: any) {
     if (n.isRead) return;
     this.api.markNotificationRead(n.notificationId).subscribe({
-      next: () => { n.isRead = true; this.unreadCount = Math.max(0, this.unreadCount - 1); },
+      next: () => {
+        this.notifications = this.notifications.filter((item: any) => Number(item.notificationId) !== Number(n.notificationId));
+        this.unreadCount = Math.max(0, this.unreadCount - 1);
+      },
       error: () => {}
     });
   }
@@ -135,7 +139,7 @@ export class TopbarComponent implements OnInit, OnDestroy {
   markAllRead() {
     if (!this.user?.userId) return;
     this.api.markAllNotificationsRead(this.user.userId).subscribe({
-      next: () => { this.notifications.forEach((n: any) => n.isRead = true); this.unreadCount = 0; },
+      next: () => { this.notifications = []; this.unreadCount = 0; },
       error: () => {}
     });
   }

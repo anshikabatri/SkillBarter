@@ -71,7 +71,8 @@ export class SubscriptionsComponent implements OnInit {
         const all = [...(learner || []), ...(mentor || [])]
           .filter((s, i, arr) => arr.findIndex(x => x.sessionId === s.sessionId) === i)
           .filter((s: any) => (s.status || '').toLowerCase() === 'completed')
-          .filter((s: any) => Number(s.learner?.userId) === Number(this.userId));
+          .filter((s: any) => Number(s.learner?.userId) === Number(this.userId))
+          .sort((a: any, b: any) => new Date(b.scheduledAt || 0).getTime() - new Date(a.scheduledAt || 0).getTime());
         this.sessions = all;
         this.loading = false;
 

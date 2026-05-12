@@ -58,6 +58,10 @@ public class NotificationService {
         notificationRepo.saveAll(unread);
     }
 
+    public void deleteSessionNotifications(Integer userId) {
+        notificationRepo.deleteByUser_UserIdAndType(userId, Notification.NotificationType.Session);
+    }
+
     public void deleteNotification(Integer notificationId) {
         if (!notificationRepo.existsById(notificationId)) {
             throw new RuntimeException("Notification not found with id: " + notificationId);
