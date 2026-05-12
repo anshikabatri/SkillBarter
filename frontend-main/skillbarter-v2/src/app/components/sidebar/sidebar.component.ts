@@ -18,6 +18,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   hasUnreadChat = false;
   private chatPollSub?: Subscription;
   private openedSessionIds = new Set<number>();
+  private lastReadTimestamps = new Map<number, string>();
 
   constructor(private auth: AuthService, private api: ApiService) {}
 
@@ -46,6 +47,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   private checkUnreadForUser(userId: number) {
     this.loadOpenedSessionState();
+
     forkJoin({
       learner: this.api.getSessionsByLearner(userId),
       mentor: this.api.getSessionsByMentor(userId)
@@ -65,6 +67,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                 return {
                   sessionId: session.sessionId,
                   lastSenderId: lastMsg?.sender?.userId || null,
+                  lastMessageAt: lastMsg?.sentAt || null,
                   hasMessages: msgs.length > 0
                 };
               })
@@ -72,13 +75,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
           )
         ).subscribe({
           next: (results: any[]) => {
-            this.loadOpenedSessionState();
-            this.hasUnreadChat = results.some(item =>
-              item.hasMessages &&
-              !this.openedSessionIds.has(Number(item.sessionId)) &&
-              Number(item.lastSenderId) !== Number(userId)
-            );
-            console.log('hasUnreadChat:', this.hasUnreadChat, results);
+            this.hasUnreadChat = results.some(item => {
+              if (!item.hasMessages) return false;
+              if (Number(item.lastSenderId) === Number(userId)) return false;
+              if (!item.lastMessageAt) return false;
+
+              if (this.openedSessionIds.has(Number(item.sessionId))) {
+                const lastRead = this.lastReadTimestamps.get(Number(item.sessionId));
+                if (!lastRead) return false;
+                return new Date(lastRead) < new Date(item.lastMessageAt);
+              }
+
+              return true;
+            });
           },
           error: () => { this.hasUnreadChat = false; }
         });
@@ -92,8 +101,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
       const raw = localStorage.getItem('chatOpenedSessions') || '[]';
       const ids = JSON.parse(raw) as number[];
       this.openedSessionIds = new Set((ids || []).map(id => Number(id)));
+
+      const tsRaw = localStorage.getItem('chatReadTimestamps') || '{}';
+      const tsMap = JSON.parse(tsRaw) as Record<string, string>;
+      this.lastReadTimestamps = new Map(Object.entries(tsMap).map(([k, v]) => [Number(k), v]));
     } catch {
       this.openedSessionIds = new Set<number>();
+      this.lastReadTimestamps = new Map();
     }
   }
 }

@@ -220,6 +220,12 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.messages = messages;
         this.loadingMsgs = false;
         this.scrollToLatestMessage();
+        // Mark as read after messages load with current time
+        const now = new Date().toISOString();
+        sessionIds.forEach((id: number) => {
+          this.lastReadTimestamps.set(Number(id), now);
+        });
+        this.saveOpenedSessionState();
       },
       error: () => { this.loadingMsgs = false; }
     });
@@ -249,6 +255,13 @@ export class ChatComponent implements OnInit, OnDestroy {
         const currentLen = this.messages.length;
         this.messages = messages;
         if (messages.length > currentLen) this.scrollToLatestMessage();
+        // Always update read timestamp while chat is open
+        const now = new Date().toISOString();
+        sessionIds.forEach((id: number) => {
+          this.openedSessionIds.add(Number(id));
+          this.lastReadTimestamps.set(Number(id), now);
+        });
+        this.saveOpenedSessionState();
       },
       error: () => {}
     });
@@ -374,20 +387,23 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   private saveOpenedSessionState() {
     localStorage.setItem('chatOpenedSessions', JSON.stringify(Array.from(this.openedSessionIds)));
+    const tsObj: Record<string, string> = {};
+    this.lastReadTimestamps.forEach((v, k) => { tsObj[k] = v; });
+    localStorage.setItem('chatReadTimestamps', JSON.stringify(tsObj));
   }
 
   private markSessionOpened(sessionId: number) {
-    if (!sessionId) return;
-    this.openedSessionIds.add(Number(sessionId));
-    if (this.selected?.allSessionIds) {
-      this.selected.allSessionIds.forEach((id: number) => {
-        this.openedSessionIds.add(Number(id));
-        // Store the last message timestamp when opened
-        if (this.selected.lastMessageAt) {
-          this.lastReadTimestamps.set(Number(id), this.selected.lastMessageAt);
-        }
-      });
-    }
-    this.saveOpenedSessionState();
-  }
+     if (!sessionId) return;
+     this.openedSessionIds.add(Number(sessionId));
+     const now = new Date().toISOString();
+     if (this.selected?.allSessionIds) {
+       this.selected.allSessionIds.forEach((id: number) => {
+         this.openedSessionIds.add(Number(id));
+         this.lastReadTimestamps.set(Number(id), now);
+       });
+     }
+     // Also set for the direct sessionId
+     this.lastReadTimestamps.set(Number(sessionId), now);
+     this.saveOpenedSessionState();
+   }
 }
