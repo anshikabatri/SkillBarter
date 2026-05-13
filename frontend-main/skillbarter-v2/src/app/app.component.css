@@ -1,8 +1,8 @@
 .sb-theme-toggle {
 	position: fixed;
-	top: 20px;
-	right: 20px;
-	z-index: 9998;
+	top: 18px;
+	right: 24px;
+	z-index: 1000;
 	width: 42px;
 	height: 42px;
 	border-radius: 10px;
@@ -18,4 +18,8 @@
 }
 
 .sb-theme-toggle:hover { transform: translateY(-2px); }
+
+.sb-theme-toggle svg {
+	display: block;
+}
 

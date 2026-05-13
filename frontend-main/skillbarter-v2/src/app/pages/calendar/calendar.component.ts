@@ -329,7 +329,11 @@ export class CalendarComponent implements OnInit, OnDestroy {
     if (!id) return;
     if (!confirm('Mark this session as completed? Both users will receive XP.')) return;
 
+    // Optimistically update the UI to reduce perceived delay, then call API.
+    const prevStatus = session.status;
+    session.status = 'Completed';
     this.completingSessionId = id;
+
     this.api.updateSessionStatus(id, 'Completed').subscribe({
       next: () => {
         this.statusSuccess = 'Session completed. +50 XP awarded.';
@@ -343,6 +347,8 @@ export class CalendarComponent implements OnInit, OnDestroy {
         this.completingSessionId = null;
       },
       error: (e: any) => {
+        // revert optimistic update on error
+        session.status = prevStatus;
         this.statusError = e?.error?.message || 'Failed to update session status.';
         this.completingSessionId = null;
       }

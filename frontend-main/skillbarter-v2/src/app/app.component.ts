@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { filter } from 'rxjs/operators';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
 
 @Component({
@@ -16,27 +17,36 @@ export class AppComponent implements OnInit {
   constructor(public router: Router) {}
 
   ngOnInit(): void {
-    const saved = localStorage.getItem('sb-theme') || localStorage.getItem('theme');
-    if (saved === 'light' || saved === 'dark') {
-      this.theme = saved as 'light' | 'dark';
-    } else {
-      this.theme = 'dark';
-    }
-    if (this.theme === 'light') {
-      document.documentElement.setAttribute('data-theme', 'light');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-    }
+    this.syncThemeFromStorage();
+    this.router.events.pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd)).subscribe(() => {
+      this.syncThemeFromStorage();
+    });
   }
 
   toggleTheme() {
     this.theme = this.theme === 'light' ? 'dark' : 'light';
-    if (this.theme === 'light') {
+    this.applyTheme(this.theme);
+  }
+
+  isPublicRoute() {
+    return this.router.url !== '/' && !this.router.url.startsWith('/app') && this.router.url !== '/profile-setup';
+  }
+
+  private syncThemeFromStorage() {
+    const saved = localStorage.getItem('sb-theme') || localStorage.getItem('theme');
+    this.theme = saved === 'light' || saved === 'dark' ? saved : 'dark';
+    this.applyTheme(this.theme, false);
+  }
+
+  private applyTheme(theme: 'dark' | 'light', persist = true) {
+    if (theme === 'light') {
       document.documentElement.setAttribute('data-theme', 'light');
     } else {
       document.documentElement.removeAttribute('data-theme');
     }
-    localStorage.setItem('sb-theme', this.theme);
-    localStorage.setItem('theme', this.theme);
+    if (persist) {
+      localStorage.setItem('sb-theme', theme);
+      localStorage.setItem('theme', theme);
+    }
   }
 }

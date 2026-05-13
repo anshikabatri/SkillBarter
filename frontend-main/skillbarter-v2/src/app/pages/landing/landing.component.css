@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 96px 20px 60px;
+  padding: 20px 60px;
   position: sticky;
   top: 0;
   background: color-mix(in srgb, var(--bg2) 92%, transparent);
@@ -24,6 +24,11 @@
 .nav-links {
   display: flex;
   gap: 32px;
+}
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 .nav-links a {
   color: var(--text2);
@@ -329,9 +334,40 @@ h1 {
   font-size: 13px;
 }
 
+.nav-theme-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.nav-theme-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--blue);
+}
+
+.nav-theme-btn svg {
+  display: block;
+}
+
 @media (max-width: 768px) {
   .nav {
-    padding-right: 72px;
+    padding: 20px 24px;
+    gap: 12px;
+  }
+  .nav-links {
+    gap: 16px;
+  }
+  .nav-actions {
+    gap: 10px;
   }
   .hero {
     flex-direction: column;
@@ -350,6 +386,10 @@ h1 {
   }
   .trust-item {
     min-width: 120px;
+  }
+  .nav-theme-btn {
+    width: 40px;
+    height: 40px;
   }
 }
 .btn-primary {

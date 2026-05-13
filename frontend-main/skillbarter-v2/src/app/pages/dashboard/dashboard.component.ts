@@ -36,10 +36,20 @@ export class DashboardComponent implements OnInit {
     this.loadingMatches = true;
     this.api.getMatchesByUser(id).subscribe({
       next: d => {
-        this.matches = (d || []).map((m: any) => ({
-          ...m,
-          _scoreValue: this.toScoreNumber(m?.matchScore ?? m?.score)
-        }));
+        this.matches = (d || [])
+          .map((m: any) => {
+            const meId = Number(id);
+            const user1Id = Number(m?.user1?.userId);
+            const other = user1Id === meId ? m?.user2 : m?.user1;
+            return {
+              ...m,
+              other: other || null,
+              otherName: other?.name || other?.email || 'Unknown',
+              otherId: other?.userId || null,
+              _scoreValue: this.toScoreNumber(m?.matchScore ?? m?.score)
+            };
+          })
+          .filter((m: any) => !!m.other && Number(m.otherId) !== Number(id));
         this.loadingMatches = false;
       },
       error: () => this.loadingMatches = false

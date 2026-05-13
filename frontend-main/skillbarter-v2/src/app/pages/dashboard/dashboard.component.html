@@ -28,8 +28,8 @@
       </div>
       <div class="mrow" *ngIf="matches.length>0">
         <div class="mc" *ngFor="let m of matches.slice(0,3)">
-          <div class="mav" [style.background]="gc(m.user2?.name||m.user1?.name)">{{ (m.user2?.name||m.user1?.name||'?').charAt(0) }}</div>
-          <div class="mn">{{ m.user2?.name || m.user1?.name }}</div>
+          <div class="mav" [style.background]="gc(m.otherName)">{{ (m.otherName||'?').charAt(0) }}</div>
+          <div class="mn">{{ m.otherName }}</div>
           <div class="ms">{{ formatMatchScore(m) }}</div>
           <a routerLink="/app/matches" class="btn-sm">View</a>
         </div>

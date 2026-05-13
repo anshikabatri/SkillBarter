@@ -29,9 +29,8 @@ export class TopbarComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const saved = localStorage.getItem('sb-theme') || localStorage.getItem('theme');
-    if (saved === 'light' || saved === 'dark') this.theme = saved as 'light' | 'dark';
-    if (this.theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
-    else document.documentElement.removeAttribute('data-theme');
+    this.theme = saved === 'light' || saved === 'dark' ? saved : 'dark';
+    this.applyTheme(this.theme, false);
 
     this.auth.currentUser$.subscribe(u => {
       this.user = u;
@@ -45,16 +44,25 @@ export class TopbarComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleTheme() {
-    this.theme = this.theme === 'light' ? 'dark' : 'light';
-    if (this.theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
-    else document.documentElement.removeAttribute('data-theme');
-    localStorage.setItem('sb-theme', this.theme);
-    localStorage.setItem('theme', this.theme);
-  }
-
   ngOnDestroy() {
     this.pollSub?.unsubscribe();
+  }
+
+  toggleTheme() {
+    this.theme = this.theme === 'light' ? 'dark' : 'light';
+    this.applyTheme(this.theme);
+  }
+
+  private applyTheme(theme: 'dark' | 'light', persist = true) {
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    if (persist) {
+      localStorage.setItem('sb-theme', theme);
+      localStorage.setItem('theme', theme);
+    }
   }
 
   startPolling(userId: number) {

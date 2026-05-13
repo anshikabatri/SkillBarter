@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Arrays;
 import java.util.Set;
 
 @Service
@@ -115,22 +117,41 @@ public class MatchService {
     private BigDecimal calculateMatchScore(Integer u1, Integer u2) {
         List<UserSkill> a = userSkillRepo.findByUserId(u1);
         List<UserSkill> b = userSkillRepo.findByUserId(u2);
+        User user1 = userRepo.findById(u1).orElse(null);
+        User user2 = userRepo.findById(u2).orElse(null);
 
         Set<Integer> aTeach = extractSkillIds(a, true, false);
         Set<Integer> aLearn = extractSkillIds(a, false, true);
         Set<Integer> bTeach = extractSkillIds(b, true, false);
         Set<Integer> bLearn = extractSkillIds(b, false, true);
+        Set<String> aCategories = extractCategories(a);
+        Set<String> bCategories = extractCategories(b);
+        Set<String> aLanguages = extractDelimitedValues(user1 != null ? user1.getLanguagesSpoken() : null);
+        Set<String> bLanguages = extractDelimitedValues(user2 != null ? user2.getLanguagesSpoken() : null);
+        Set<String> aProfileTerms = extractProfileTerms(user1);
+        Set<String> bProfileTerms = extractProfileTerms(user2);
 
         int u1NeedsMetByU2 = intersectionCount(aLearn, bTeach);
         int u2NeedsMetByU1 = intersectionCount(bLearn, aTeach);
         int totalNeeds = aLearn.size() + bLearn.size();
+        int categoryOverlap = intersectionCount(aCategories, bCategories);
+        int languageOverlap = intersectionCount(aLanguages, bLanguages);
+        int categoryBase = Math.max(aCategories.size(), bCategories.size());
+        int languageBase = Math.max(aLanguages.size(), bLanguages.size());
+        int profileOverlap = intersectionCount(aProfileTerms, bProfileTerms);
+        int profileBase = Math.max(aProfileTerms.size(), bProfileTerms.size());
 
         if (totalNeeds == 0) {
             int sharedTeachingAbility = intersectionCount(aTeach, bTeach);
             int sharedLearningInterest = intersectionCount(aLearn, bLearn);
             int fallbackPool = aTeach.size() + aLearn.size() + bTeach.size() + bLearn.size();
-            if (fallbackPool == 0) return BigDecimal.ZERO;
-            double fallbackScore = ((sharedTeachingAbility * 0.25) + (sharedLearningInterest * 0.25)) / fallbackPool;
+            double fallbackExact = fallbackPool > 0
+                    ? (sharedTeachingAbility + sharedLearningInterest) / (double) fallbackPool
+                    : 0.0;
+            double fallbackCategory = categoryBase > 0 ? categoryOverlap / (double) categoryBase : 0.0;
+            double fallbackLanguage = languageBase > 0 ? languageOverlap / (double) languageBase : 0.0;
+                double fallbackProfile = profileBase > 0 ? profileOverlap / (double) profileBase : 0.0;
+                double fallbackScore = (fallbackExact * 0.45) + (fallbackCategory * 0.2) + (fallbackLanguage * 0.1) + (fallbackProfile * 0.25);
             return BigDecimal.valueOf(Math.min(100.0, Math.max(0.0, fallbackScore * 100.0))).setScale(2, RoundingMode.HALF_UP);
         }
 
@@ -142,8 +163,11 @@ public class MatchService {
         if (bLearn.size() > 0) {
             coverageBonus += (u2NeedsMetByU1 / (double) bLearn.size()) * 0.2;
         }
+        double categoryBonus = categoryBase > 0 ? (categoryOverlap / (double) categoryBase) * 0.15 : 0.0;
+        double languageBonus = languageBase > 0 ? (languageOverlap / (double) languageBase) * 0.05 : 0.0;
+        double profileBonus = profileBase > 0 ? (profileOverlap / (double) profileBase) * 0.1 : 0.0;
 
-        double pct = Math.min(100.0, Math.max(0.0, (reciprocalFit * 0.8 + coverageBonus) * 100.0));
+        double pct = Math.min(100.0, Math.max(0.0, (reciprocalFit * 0.62 + coverageBonus + categoryBonus + languageBonus + profileBonus) * 100.0));
         return BigDecimal.valueOf(pct).setScale(2, RoundingMode.HALF_UP);
     }
 
@@ -157,12 +181,62 @@ public class MatchService {
         return out;
     }
 
-    private int intersectionCount(Set<Integer> a, Set<Integer> b) {
+    private int intersectionCount(Set<?> a, Set<?> b) {
         int count = 0;
-        for (Integer x : a) {
+        for (Object x : a) {
             if (b.contains(x)) count++;
         }
         return count;
+    }
+
+    private Set<String> extractCategories(List<UserSkill> list) {
+        Set<String> out = new HashSet<>();
+        for (UserSkill us : list) {
+            if (us.getSkill() == null || us.getSkill().getCategory() == null) continue;
+            String name = us.getSkill().getCategory().getName();
+            if (name != null && !name.trim().isEmpty()) {
+                out.add(name.trim().toLowerCase(Locale.ROOT));
+            }
+        }
+        return out;
+    }
+
+    private Set<String> extractDelimitedValues(String raw) {
+        Set<String> out = new HashSet<>();
+        if (raw == null || raw.trim().isEmpty()) return out;
+        for (String value : raw.split("[,]")) {
+            String cleaned = value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+            if (!cleaned.isEmpty()) {
+                out.add(cleaned);
+            }
+        }
+        return out;
+    }
+
+    private Set<String> extractProfileTerms(User user) {
+        Set<String> out = new HashSet<>();
+        if (user == null) return out;
+
+        List<String> sourceTexts = Arrays.asList(user.getName(), user.getBio());
+        Set<String> stopWords = new HashSet<>(Arrays.asList(
+                "the", "and", "or", "to", "a", "an", "of", "in", "for", "with", "on", "at", "by", "i", "im", "am", "is", "are", "be", "looking", "learn", "learning", "developer", "trainer", "mentor", "person"
+        ));
+
+        for (String text : sourceTexts) {
+            if (text == null || text.trim().isEmpty()) continue;
+            String normalized = text.toLowerCase(Locale.ROOT)
+                    .replaceAll("[^a-z0-9+ ]", " ")
+                    .replaceAll("\s+", " ")
+                    .trim();
+            if (normalized.isEmpty()) continue;
+            for (String token : normalized.split(" ")) {
+                if (token.length() < 3) continue;
+                if (stopWords.contains(token)) continue;
+                out.add(token);
+            }
+        }
+
+        return out;
     }
 
     @lombok.Getter

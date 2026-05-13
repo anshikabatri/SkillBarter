@@ -45,6 +45,7 @@
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
+  padding-right: 62px;
 }
 .icon-btn {
   position: relative;
@@ -62,13 +63,6 @@
   color: var(--text);
   border-color: var(--blue);
 }
-.theme-btn {
-  width: 38px;
-  justify-content: center;
-}
-/* make theme button visually consistent with other icons */
-.icon-btn.theme-btn { padding: 6px; display: inline-flex; align-items: center; justify-content: center; }
-.icon-btn.theme-btn svg { display: block; }
 .badge {
   position: absolute;
   top: -4px;

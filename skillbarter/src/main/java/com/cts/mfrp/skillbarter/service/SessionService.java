@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Locale;
@@ -131,23 +133,30 @@ public class SessionService {
 
             userRepo.save(mentor);
             userRepo.save(learner);
-
-            try {
-                String skillName = session.getSkill() != null ? session.getSkill().getName() : "session";
-                notificationService.deleteSessionNotifications(mentor.getUserId());
-                notificationService.deleteSessionNotifications(learner.getUserId());
-                notificationService.createNotification(
-                        mentor.getUserId(),
-                        Notification.NotificationType.Session,
-                        "Session marked completed for " + skillName + ". You earned " + COMPLETION_XP + " XP."
-                );
-                notificationService.createNotification(
-                        learner.getUserId(),
-                        Notification.NotificationType.Session,
-                        "Session marked completed for " + skillName + ". You earned " + COMPLETION_XP + " XP."
-                );
-            } catch (Exception ignored) {
-            }
+            // Defer notifications until after the transaction successfully commits to avoid
+            // rollbacks or long-running work holding DB locks during the commit.
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    try {
+                        String skillName = session.getSkill() != null ? session.getSkill().getName() : "session";
+                        notificationService.deleteSessionNotifications(mentor.getUserId());
+                        notificationService.deleteSessionNotifications(learner.getUserId());
+                        notificationService.createNotification(
+                                mentor.getUserId(),
+                                Notification.NotificationType.Session,
+                                "Session marked completed for " + skillName + ". You earned " + COMPLETION_XP + " XP."
+                        );
+                        notificationService.createNotification(
+                                learner.getUserId(),
+                                Notification.NotificationType.Session,
+                                "Session marked completed for " + skillName + ". You earned " + COMPLETION_XP + " XP."
+                        );
+                    } catch (Exception ignored) {
+                        // best-effort notifications; failures here should not affect the completed transaction
+                    }
+                }
+            });
         }
 
         return sessionRepo.save(session);
