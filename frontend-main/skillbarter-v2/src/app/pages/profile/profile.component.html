@@ -43,7 +43,7 @@
                     <div class="add-row">
                         <select [(ngModel)]="selectedTeachSkillId" class="input">
                             <option [ngValue]="null">Select a skill...</option>
-                            <option *ngFor="let s of allSkills" [ngValue]="s.skillId">{{ s.name }}</option>
+                            <option *ngFor="let s of availableSkills()" [ngValue]="s.skillId">{{ s.name }}</option>
                         </select>
                         <button class="btn-primary" (click)="addSkillById(true)" [disabled]="addingSkill || !selectedTeachSkillId">Add</button>
                     </div>
@@ -61,7 +61,7 @@
                     <div class="add-row">
                         <select [(ngModel)]="selectedLearnSkillId" class="input">
                             <option [ngValue]="null">Select a skill...</option>
-                            <option *ngFor="let s of allSkills" [ngValue]="s.skillId">{{ s.name }}</option>
+                            <option *ngFor="let s of availableSkills()" [ngValue]="s.skillId">{{ s.name }}</option>
                         </select>
                         <button class="btn-primary" (click)="addSkillById(false)" [disabled]="addingSkill || !selectedLearnSkillId">Add</button>
                     </div>

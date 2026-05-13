@@ -7,4 +7,6 @@ import java.util.List;
 public interface UserSkillRepo extends JpaRepository<UserSkill, Integer> {
     // Supports US_15: Get specific user's swap list
     List<UserSkill> findByUserId(Integer userId);
+
+    List<UserSkill> findByUserIdAndSkill_SkillId(Integer userId, Integer skillId);
 }

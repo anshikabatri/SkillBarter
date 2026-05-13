@@ -37,6 +37,40 @@ export class ProfileComponent implements OnInit {
 
   gc(n: string = '') { return this.colors[(n?.charCodeAt(0) || 0) % this.colors.length]; }
 
+  private isSkillFlagEnabled(value: any): boolean {
+    return value === true || value === 1 || value === '1' || value === 'true';
+  }
+
+  private skillIdOf(item: any): number | null {
+    const value = item?.skill?.skillId ?? item?.skillId ?? null;
+    return value === null || value === undefined ? null : Number(value);
+  }
+
+  private normalizeSkills(list: any[]): any[] {
+    const merged = new Map<number, any>();
+    (list || []).forEach((item: any) => {
+      const skillId = this.skillIdOf(item);
+      if (skillId === null || Number.isNaN(skillId)) return;
+      const existing = merged.get(skillId);
+      if (existing) {
+        existing.isTeach = this.isSkillFlagEnabled(existing.isTeach) || this.isSkillFlagEnabled(item?.isTeach);
+        existing.isLearn = this.isSkillFlagEnabled(existing.isLearn) || this.isSkillFlagEnabled(item?.isLearn);
+        return;
+      }
+      merged.set(skillId, { ...item });
+    });
+    return Array.from(merged.values());
+  }
+
+  hasSkill(skillId: number | null): boolean {
+    if (skillId === null || skillId === undefined) return false;
+    return [...this.teachSkills, ...this.learnSkills].some((skill: any) => Number(this.skillIdOf(skill)) === Number(skillId));
+  }
+
+  availableSkills(): any[] {
+    return this.allSkills.filter((skill: any) => !this.hasSkill(skill?.skillId));
+  }
+
   constructor(private auth: AuthService, private api: ApiService) {}
 
   ngOnInit() {
@@ -58,7 +92,7 @@ export class ProfileComponent implements OnInit {
     if (!this.user?.userId) return;
     this.api.getUserSkills(this.user.userId).subscribe({
       next: (d: any[]) => {
-        const list = d || [];
+        const list = this.normalizeSkills(d || []);
         this.teachSkills = list.filter((s: any) => s?.isTeach === true || s?.isTeach === 1 || s?.isTeach === '1' || s?.isTeach === 'true');
         this.learnSkills = list.filter((s: any) => s?.isLearn === true || s?.isLearn === 1 || s?.isLearn === '1' || s?.isLearn === 'true');
       },
@@ -70,6 +104,10 @@ export class ProfileComponent implements OnInit {
     if (!this.user?.userId) return;
     const skillId = isTeach ? this.selectedTeachSkillId : this.selectedLearnSkillId;
     if (!skillId) return;
+    if (this.hasSkill(skillId)) {
+      this.error = 'That skill is already added to your profile.';
+      return;
+    }
     this.error = '';
     this.addingSkill = true;
     this.api.addUserSkill({
