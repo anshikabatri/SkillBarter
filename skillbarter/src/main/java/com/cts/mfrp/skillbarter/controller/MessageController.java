@@ -6,7 +6,6 @@ import com.cts.mfrp.skillbarter.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,7 +26,7 @@ public class MessageController {
     private MessageService messageService;
 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private com.cts.mfrp.skillbarter.websocket.ChatWebSocketHandler chatWebSocketHandler;
 
     private static final String UPLOAD_DIR = "uploads/";
 
@@ -42,7 +41,7 @@ public class MessageController {
         }
 
         Message message = messageService.sendMessage(sessionId, senderId, content);
-        messagingTemplate.convertAndSend("/topic/sessions/" + sessionId, message);
+        try { chatWebSocketHandler.broadcastToSession(sessionId, message); } catch (Exception ignored) {}
         return ResponseEntity.ok(ApiResponse.success("Message sent successfully", message));
     }
 
@@ -76,7 +75,7 @@ public class MessageController {
             // Save message with file info
             String content = fileType.equals("image") ? "📷 Image" : "📎 " + originalFilename;
             Message message = messageService.sendMessageWithFile(sessionId, senderId, content, fileUrl, fileType);
-            messagingTemplate.convertAndSend("/topic/sessions/" + sessionId, message);
+            try { chatWebSocketHandler.broadcastToSession(sessionId, message); } catch (Exception ignored) {}
 
             return ResponseEntity.ok(ApiResponse.success("File sent successfully", message));
         } catch (IOException e) {

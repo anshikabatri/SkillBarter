@@ -5,7 +5,7 @@ import { forkJoin, interval, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
-import { RealtimeChatService } from '../../services/realtime-chat.service';
+import { WsChatService } from '../../services/ws-chat.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -41,12 +41,12 @@ export class ChatComponent implements OnInit, OnDestroy {
     return this.sessions.some(session => this.isUnread(session));
   }
 
-  constructor(private auth: AuthService, private api: ApiService, private realtime: RealtimeChatService) {}
+  constructor(private auth: AuthService, private api: ApiService, private ws: WsChatService) {}
 
   ngOnInit() {
     this.loadOpenedSessionState();
     this.me = this.auth.currentUser;
-    this.realtime.connect();
+    this.ws.connect();
     if (this.me?.userId) {
       this.loadSessions();
       this.startPolling();
@@ -69,7 +69,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.pollSub?.unsubscribe();
     this.clearRealtimeSubscriptions();
-    this.realtime.disconnect();
+    this.ws.disconnect();
   }
 
   startPolling() {
@@ -418,7 +418,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.clearRealtimeSubscriptions();
     const sessionIds: number[] = this.selected?.allSessionIds || (this.selected?.sessionId ? [this.selected.sessionId] : []);
     sessionIds.forEach((id: number) => {
-      const unsubscribe = this.realtime.subscribeToSession(Number(id), () => {
+      const unsubscribe = this.ws.subscribeToSession(Number(id), () => {
         this.refreshSessionsSilently();
         if (this.selected?.sessionId) {
           this.refreshMessagesSilently(this.selected.sessionId);
