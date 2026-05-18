@@ -10,6 +10,7 @@
   },
   "private": true,
   "dependencies": {
+    "@stomp/stompjs": "^7.2.1",
     "@angular/animations": "^17.0.0",
     "@angular/common": "^17.0.0",
     "@angular/compiler": "^17.0.0",
@@ -19,6 +20,7 @@
     "@angular/platform-browser-dynamic": "^17.0.0",
     "@angular/router": "^17.0.0",
     "rxjs": "~7.8.0",
+    "sockjs-client": "^1.6.1",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.0"
   },
@@ -27,6 +29,7 @@
     "@angular/cli": "^17.0.0",
     "@angular/compiler-cli": "^17.0.0",
     "@types/node": "^18.18.0",
+    "@types/sockjs-client": "^1.5.4",
     "typescript": "~5.2.2"
   }
 }

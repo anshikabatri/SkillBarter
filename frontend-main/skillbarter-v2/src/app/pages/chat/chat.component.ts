@@ -5,6 +5,7 @@ import { forkJoin, interval, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { RealtimeChatService } from '../../services/realtime-chat.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -24,6 +25,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   loadingMsgs = false;
   me: any;
   pollSub?: Subscription;
+  private sessionRealtimeUnsubs: Array<() => void> = [];
   private lastReadTimestamps = new Map<number, string>();
   @ViewChild('messagesContainer') messagesContainer?: ElementRef<HTMLDivElement>;
   private openedSessionIds = new Set<number>();
@@ -39,11 +41,12 @@ export class ChatComponent implements OnInit, OnDestroy {
     return this.sessions.some(session => this.isUnread(session));
   }
 
-  constructor(private auth: AuthService, private api: ApiService) {}
+  constructor(private auth: AuthService, private api: ApiService, private realtime: RealtimeChatService) {}
 
   ngOnInit() {
     this.loadOpenedSessionState();
     this.me = this.auth.currentUser;
+    this.realtime.connect();
     if (this.me?.userId) {
       this.loadSessions();
       this.startPolling();
@@ -65,11 +68,14 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.pollSub?.unsubscribe();
+    this.clearRealtimeSubscriptions();
+    this.realtime.disconnect();
   }
 
   startPolling() {
     this.pollSub?.unsubscribe();
-    this.pollSub = interval(2500).subscribe(() => {
+    // Polling fallback for environments where WebSocket may be blocked.
+    this.pollSub = interval(10000).subscribe(() => {
       if (this.me?.userId) this.refreshSessionsSilently();
       if (this.selected?.sessionId) this.refreshMessagesSilently(this.selected.sessionId);
     });
@@ -197,6 +203,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.messages = [];
     this.loadingMsgs = true;
     this.markSessionOpened(s?.sessionId);
+    this.bindRealtimeForSelectedSession();
 
     const sessionIds: number[] = s.allSessionIds || [s.sessionId];
 
@@ -406,4 +413,23 @@ export class ChatComponent implements OnInit, OnDestroy {
      this.lastReadTimestamps.set(Number(sessionId), now);
      this.saveOpenedSessionState();
    }
+
+  private bindRealtimeForSelectedSession() {
+    this.clearRealtimeSubscriptions();
+    const sessionIds: number[] = this.selected?.allSessionIds || (this.selected?.sessionId ? [this.selected.sessionId] : []);
+    sessionIds.forEach((id: number) => {
+      const unsubscribe = this.realtime.subscribeToSession(Number(id), () => {
+        this.refreshSessionsSilently();
+        if (this.selected?.sessionId) {
+          this.refreshMessagesSilently(this.selected.sessionId);
+        }
+      });
+      this.sessionRealtimeUnsubs.push(unsubscribe);
+    });
+  }
+
+  private clearRealtimeSubscriptions() {
+    this.sessionRealtimeUnsubs.forEach(unsub => unsub());
+    this.sessionRealtimeUnsubs = [];
+  }
 }

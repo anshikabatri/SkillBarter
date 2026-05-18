@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { TopbarComponent } from '../topbar/topbar.component';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
@@ -20,7 +20,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
   private openedSessionIds = new Set<number>();
   private lastReadTimestamps = new Map<number, string>();
 
-  constructor(private auth: AuthService, private api: ApiService) {}
+  constructor(private auth: AuthService, private api: ApiService, private router: Router) {}
+
+  goToChat(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    void this.router.navigate(['/app/chat']);
+  }
 
   ngOnInit(): void {
     this.loadOpenedSessionState();
