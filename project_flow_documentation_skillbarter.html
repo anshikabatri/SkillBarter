@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillBarter - Project Flow Documentation</title>
+  <style>
+    :root{--bg:#f5f7fa;--card:#fff;--accent:#185FA5;--muted:#64748b;--border:#cbd5e1;--success:#0F6E56}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#0f172a;padding:24px}
+    .wrap{max-width:1100px;margin:0 auto;background:var(--card);padding:32px;border-radius:10px;box-shadow:0 6px 18px rgba(2,6,23,.06)}
+    h1{font-size:28px;color:var(--accent);margin-bottom:6px}
+    .subtitle{color:var(--muted);margin-bottom:18px}
+    .toc{background:#f8fafc;padding:18px;border:1px solid var(--border);border-radius:8px;margin:18px 0}
+    .section{margin:28px 0;padding:20px;border-left:4px solid var(--accent);background:#fbfdff;border-radius:6px}
+    .code{background:#eef2f7;border:1px solid var(--border);padding:12px;border-radius:6px;font-family:monospace;font-size:13px;overflow:auto}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:8px;border:1px solid var(--border);text-align:left}
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#e6f0ff;color:var(--accent);font-weight:600}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>SkillBarter — Project Flow Documentation</h1>
+    <p class="subtitle">Monorepo with Angular frontend and Spring Boot backend — concise reference for contributors</p>
+
+    <div class="toc">
+      <strong>Contents</strong>
+      <ul>
+        <li>1. Project Overview & Structure</li>
+        <li>2. Technology Stack</li>
+        <li>3. Backend (skillbarter/)</li>
+        <li>4. Frontend (frontend-main/skillbarter-v2/)</li>
+        <li>5. Authentication & Security</li>
+        <li>6. Chat / Real-time / AI pieces</li>
+        <li>7. Database & Entities</li>
+        <li>8. API Endpoints (high-level)</li>
+        <li>9. Quick Start & Build</li>
+      </ul>
+    </div>
+
+    <div class="section" id="overview">
+      <h2>1. Project Overview & Structure</h2>
+      <p>This repository contains two main parts:
+        <ul>
+          <li><strong>Backend:</strong> `skillbarter/` — Spring Boot application (Maven)</li>
+          <li><strong>Frontend:</strong> `frontend-main/skillbarter-v2/` — Angular app (package.json, Angular 17-style)</li>
+        </ul>
+      </p>
+
+      <h3>Top-level layout</h3>
+      <div class="code">/ (workspace root)
+        <br/>├─ frontend-main/skillbarter-v2/  (Angular app)
+        <br/>├─ skillbarter/                   (Spring Boot backend)
+        <br/>├─ uploads/                       (static/uploads)
+        <br/>├─ README.md
+      </div>
+    </div>
+
+    <div class="section" id="tech">
+      <h2>2. Technology Stack</h2>
+      <div class="grid">
+        <div>
+          <h4>Backend</h4>
+          <ul>
+            <li>Spring Boot (Maven)</li>
+            <li>Java 17+</li>
+            <li>Spring Data JPA</li>
+            <li>H2 (dev) / MySQL (prod) typical</li>
+            <li>JWT-based auth (likely)</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Frontend</h4>
+          <ul>
+            <li>Angular (project in frontend-main/skillbarter-v2)</li>
+            <li>TypeScript, RxJS</li>
+            <li>HttpClient, Guards, Interceptors</li>
+            <li>Chatbot & realtime services present</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Dev / Ops</h4>
+          <ul>
+            <li>Dockerfile in `skillbarter/`</li>
+            <li>Maven wrapper (`mvnw`, `mvnw.cmd`)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="backend-flow">
+      <h2>3. Backend (skillbarter/)</h2>
+      <p>Key files and structure (inside <span class="badge">skillbarter/src/main</span>):</p>
+      <div class="code">src/main/java/com/...  (package tree)
+        <br/>├─ controllers
+        <br/>├─ service
+        <br/>├─ repository
+        <br/>├─ entity
+        <br/>├─ resources/application.properties
+      </div>
+
+      <h3>Build & artifact</h3>
+      <p>Maven builds a jar; `target/` contains the packaged artifact. Use `mvnw spring-boot:run` to run locally.</p>
+
+      <h3>Common request flow</h3>
+      <ol>
+        <li>HTTP request → DispatcherServlet → Controller</li>
+        <li>Controller → Service layer → Repository (JPA)</li>
+        <li>Service returns DTO → Controller returns ResponseEntity</li>
+      </ol>
+    </div>
+
+    <div class="section" id="frontend-flow">
+      <h2>4. Frontend (frontend-main/skillbarter-v2/)</h2>
+      <p>Angular app entry: `src/main.ts` and `src/app/` (components, services, pages).
+      Look for `app.component.ts`, `app.routes.ts`, and `services/api.service.ts`.</p>
+
+      <h3>Features present</h3>
+      <ul>
+        <li>Topbar / Sidebar components for layout</li>
+        <li>Chat and chatbot components (chatbot.component.ts)</li>
+        <li>Auth service and HTTP interceptor for token injection</li>
+        <li>Realtime chat services (`realtime-chat.service.ts`, `ws-chat.service.ts`)</li>
+      </ul>
+
+      <h3>Routing & guards</h3>
+      <p>App uses route guards (auth.guard.ts) to protect pages and interceptors to add JWT tokens.</p>
+    </div>
+
+    <div class="section" id="auth">
+      <h2>5. Authentication & Security</h2>
+      <p>The project uses token-based auth patterns on the frontend (`auth.service.ts`, `auth.interceptor.ts`). The backend likely exposes `/api/auth/*` endpoints and uses a Jwt filter similar to typical Spring Boot setups.</p>
+
+      <div class="code">Key frontend places:
+        <br/>- `frontend-main/skillbarter-v2/src/app/services/auth.service.ts`
+        <br/>- `frontend-main/skillbarter-v2/src/app/services/auth.interceptor.ts`
+      </div>
+    </div>
+
+    <div class="section" id="chat-ai">
+      <h2>6. Chat / Real-time / AI pieces</h2>
+      <p>Files to review for chat/AI functionality:</p>
+      <ul>
+        <li>`frontend-main/skillbarter-v2/src/app/components/chatbot/` — chatbot UI</li>
+        <li>`frontend-main/skillbarter-v2/src/app/services/realtime-chat.service.ts` — realtime helper</li>
+        <li>`frontend-main/skillbarter-v2/src/app/services/ws-chat.service.ts` — WebSocket-based chat</li>
+        <li>`frontend-main/skillbarter-v2/src/app/services/gemini.service.ts` — external AI / LLM integration wrapper (name suggests Gemini usage)</li>
+      </ul>
+
+      <p>These indicate a hybrid architecture where messages can be sent to a server or proxied to an LLM service.</p>
+    </div>
+
+    <div class="section" id="db">
+      <h2>7. Database & Entities</h2>
+      <p>Backend contains `entity` and `repository` packages. Inspect `skillbarter/src/main/resources/application.properties` and `target/classes` for runtime configuration.</p>
+      <div class="code">Look for:
+        <br/>- `skillbarter/src/main/java/.../entity/`  (JPA entities)
+        <br/>- `skillbarter/src/main/java/.../repository/` (Spring Data repositories)
+      </div>
+    </div>
+
+    <div class="section" id="api">
+      <h2>8. API Endpoints (high-level)</h2>
+      <p>Common endpoint groups to expect (search `controller` package):</p>
+      <table>
+        <thead><tr><th>Group</th><th>Examples</th></tr></thead>
+        <tbody>
+          <tr><td>Auth</td><td>/api/auth/login, /api/auth/register</td></tr>
+          <tr><td>Users / Profiles</td><td>/api/users, /api/profile</td></tr>
+          <tr><td>Chat</td><td>/api/chat/*, WebSocket endpoints</td></tr>
+          <tr><td>Uploads</td><td>/api/uploads (uploads/ folder present)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section" id="quickstart">
+      <h2>9. Quick Start & Build</h2>
+      <h4>Backend (Windows / PowerShell)</h4>
+      <div class="code">cd skillbarter
+        <br/>./mvnw spring-boot:run
+        <br/># or build: ./mvnw -DskipTests package
+      </div>
+
+      <h4>Frontend</h4>
+      <div class="code">cd frontend-main/skillbarter-v2
+        <br/>npm install
+        <br/>npm run start
+        <br/># or with Angular CLI: ng serve
+      </div>
+
+      <h4>Docker</h4>
+      <div class="code"># Dockerfile available under `skillbarter/` — build a container for backend
+        <br/>docker build -t skillbarter-backend ./skillbarter
+      </div>
+    </div>
+
+    <div style="margin-top:18px;padding:16px;background:#f8fafc;border-radius:8px;border:1px solid var(--border)">
+      <strong>Files created</strong>: project_flow_documentation_skillbarter.html
+      <br/>
+      <strong>Next suggested steps</strong>: review controllers and services in `skillbarter/src/main/java` and frontend services under `frontend-main/skillbarter-v2/src/app/services` to expand API docs.
+    </div>
+  </div>
+</body>
+</html>

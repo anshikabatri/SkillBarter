@@ -12,16 +12,14 @@ export class WsChatService {
 
   connect() {
     if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) return;
-    const apiBase = environment.apiUrl.replace(/\/api$/, '');
-    const wsUrl = apiBase.replace(/^http/, 'ws') + '/ws-simple';
     try {
-      this.socket = new WebSocket(wsUrl);
-      this.socket.onopen = () => { /* no-op */ };
+      this.socket = new WebSocket(environment.wsUrl);
+      this.socket.onopen = () => { console.log('[WS] Connected to', environment.wsUrl); };
       this.socket.onmessage = (ev) => this.handleMessage(ev.data);
-      this.socket.onclose = () => { if (this.shouldReconnect) setTimeout(() => this.connect(), this.reconnectMs); };
-      this.socket.onerror = () => { /* swallow */ };
+      this.socket.onclose = () => { console.warn('[WS] Connection closed'); if (this.shouldReconnect) setTimeout(() => this.connect(), this.reconnectMs); };
+      this.socket.onerror = (err) => { console.error('[WS] Error:', err); };
     } catch (e) {
-      // ignore
+      console.error('[WS] Connection failed:', e);
     }
   }
 
